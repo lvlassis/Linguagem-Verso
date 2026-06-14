@@ -46,6 +46,8 @@
     "finde": "BREAK",
     "devolva": "RETURN",
     "entregue": "RETURN",
+    "retorne": "RETURN",
+    "volte": "RETURN",
 
     "a": "ARTICLE",
     "o": "ARTICLE",
