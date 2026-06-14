@@ -14,43 +14,50 @@ Full language spec: `docs/Linguagem Poética.md`. Syntax examples: `docs/rascunh
 python main.py
 ```
 
+`main.py` is currently a scratch test file that calls `tokenize()` on a hardcoded string and prints the result.
+
 ## Architecture
 
-All compiler logic lives in `verso/tokens.py`. The pipeline per line is:
+All compiler logic lives in `verso/tokens.py`. The only implemented stage is lexical analysis (`tokenize()`).
 
-1. `filter_comments(line)` — strips `#` comments
-2. `verso_split(line)` — splits on spaces and isolates `.` as its own token
-3. **Weak pass** (`tokenize_word_weak`) — classifies each word independently; unrecognized words become `TokenType.WEAK`
-4. **Strong pass** (`tokenize_strong`) — reclassifies `WEAK` tokens using surrounding context (e.g. the word before `DECLARATION` becomes `VARIABLE`)
+### Tokenization pipeline
 
-Each line ends with `TokenType.EOL` appended to the flat token list. The result is a `TokenList`.
+`tokenize(program: str) -> list[Token]` uses a single-pass regex tokenizer:
 
-### TokenList
+1. A master regex matches token kinds in priority order: `COMMENT`, `IDENTIFIER`, `NUMBER`, `ELLIPSE`, `DOT`, `WHITESPACE`, `MISMATCH`, `EOL`.
+2. `WHITESPACE` and `COMMENT` tokens are discarded.
+3. `IDENTIFIER` tokens are looked up in `verso/palavras_reservadas.json`; if found, the JSON value becomes the token kind; otherwise the word is classified as `VARIABLE`.
+4. The result is a flat `list[Token]`.
 
-`TokenList` wraps `list[Token]` and exposes:
-- `find(tipo: TokenType)` — returns `(Token, index)` of the first match, or `None`
-- `merge(start, end, token_type)` — replaces `tokens[start:end]` with a single token whose value is the joined string values of the slice
+### Reserved words
 
-## Enums
+`verso/palavras_reservadas.json` is the single source of truth for keyword-to-`TokenType` mapping. To add a new keyword, add it here — no code changes needed unless the `TokenType` member itself is new.
 
-**`TokenType`** — type of a token; add new members here when introducing new syntax:
+> **Known bugs in `palavras_reservadas.json`:** Several entries use `PRIMITIVA_TYPE` (not `PRIMITIVE_TYPE`) and `DIFERENT` (not `DIFFERENT`), and the `"me "` key has a trailing space. These will cause `KeyError` at runtime for those tokens.
+
+## Token types
+
+**`TokenType`** — add new members here when introducing new syntax:
 
 | Member | Meaning |
 |---|---|
-| `WEAK` | Unclassified word (upgraded in strong pass) |
+| `VARIABLE` | Identifier not found in reserved words |
 | `DOT` | `.` — statement/block terminator |
-| `DECLARATION` | `é` / `és` — declaration or assignment keyword |
-| `VARIABLE` | Identifier (reclassified from WEAK when before DECLARATION) |
-| `PRIMITIVE_TYPE` | Type keyword; `value` holds a `PrimitiveType` member |
-| `NUMERICAL_EXPRESSION` | Collapsed adjective phrase representing a numeric value |
+| `ELLIPSE` | `...` — used in float value phrases |
+| `NUMBER` | Integer or float literal (`\d+(\.\d+)?`) |
+| `DECLARATION` | `é`, `és`, `seja` — assignment/declaration keyword |
+| `PRIMITIVE_TYPE` | Type keyword (`rocha`, `bruma`) |
+| `DATA_STRUCT` | Array/collection keyword (`coro`, `compêndio`) |
+| `IF` / `ELSE` / `WHILE` / `FOR` | Control flow |
+| `EQUAL` / `DIFFERENT` / `GREATER_THAN` / `LESS_THAN` / `GREATER_OR_EQUAL` / `LESS_OR_EQUAL` | Comparison operators |
+| `AND` / `OR` / `NOT` | Logical operators |
+| `BOOLEAN_TRUE` / `BOOLEAN_FALSE` | Boolean literals |
+| `ARTICLE` | `a`, `o`, `um`, `uma` — grammar filler |
+| `PREPOSITION` | `de`, `da` — grammar filler |
+| `CONJUNCTION` | `que` — grammar filler |
 | `EOL` | End of line sentinel |
 
-**`PrimitiveType`** — value stored in a `PRIMITIVE_TYPE` token; add new members here when introducing new types:
-
-| Member | Romântica keywords |
-|---|---|
-| `INTEGER` | `rocha` |
-| `FLOAT` | `bruma`, `névoa`, `cinza` (not yet implemented) |
+> **Note:** `STRUCT` and `DATA_STRUCT` are both defined in the enum with the same value `'DATA_STRUCT'` — this is a duplicate.
 
 ## Language Semantics
 
@@ -67,8 +74,6 @@ Each line ends with `TokenType.EOL` appended to the flat token list. The result 
 - `Que <var> seja <type> <adjective>.` → `type var = value;`
 
 **Assignment aliases for `é`:** `és`, `guarda`, `encerra`, `seja`, `guarde`, `encerre`
-
-**Numeric values** are encoded as adjective phrases (not literals); the phrase between the type token and the next `.` or EOL becomes a `TOKEN_NUMERICAL_EXPRESSION`.
 
 **Control flow:** `se … então` → `if` | `porém, se|caso` → `else if` | `senão` → `else` | `enquanto` → `while` | `para` → `for` | `.` → `}`
 
