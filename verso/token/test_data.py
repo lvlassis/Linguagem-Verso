@@ -214,12 +214,21 @@ run(
     "amor me ódio\n",
 )
 
+# ── Saída ─────────────────────────────────────────────────────────────────────
+
+run(
+    "Print: gritarei",
+    "gritarei meu amor\n",
+)
+
+run(
+    "Print: digo que (multi-palavra → token único)",
+    "digo que nunca te abandonarei\n",
+)
+
 # ── Blocos condicionais ───────────────────────────────────────────────────────
 #
-# Observações sobre os casos abaixo:
-#   - 'então' não está no JSON → vira VARIABLE (falta adicionar)
-#   - 'for' (verbo português) não está no JSON → vira VARIABLE
-#   - 'digo' não está no JSON → vira VARIABLE (print multi-palavra, tratado no parser)
+# Observação: 'for' (verbo português) não está nas constantes → vira VARIABLE
 
 run(
     "if simples — se o amor for maior que a dor então",

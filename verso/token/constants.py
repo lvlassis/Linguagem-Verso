@@ -1,3 +1,4 @@
+from dataclasses import dataclass, field
 from enum import Enum
 
 
@@ -49,76 +50,90 @@ class TokenType(Enum):
     PRINT = 'PRINT'
 
 
-PALAVRAS_RESERVADAS: dict[str, TokenType] = {
-    "é": TokenType.DECLARATION,
-    "és": TokenType.DECLARATION,
-    "seja": TokenType.DECLARATION,
-    "guarda": TokenType.DECLARATION,
-    "encerra": TokenType.DECLARATION,
-    "guarde": TokenType.DECLARATION,
-    "encerre": TokenType.DECLARATION,
+class PrimitiveType(Enum):
+    INTEGER = 'INTEGER'
+    FLOAT   = 'FLOAT'
+    CHAR    = 'CHAR'
+    STRING  = 'STRING'
+    BOOL    = 'BOOL'
 
-    "rocha": TokenType.PRIMITIVE_TYPE,
-    "bruma": TokenType.PRIMITIVE_TYPE,
-    "névoa": TokenType.PRIMITIVE_TYPE,
-    "cinza": TokenType.PRIMITIVE_TYPE,
-    "dilema": TokenType.PRIMITIVE_TYPE,
-    "dualidade": TokenType.PRIMITIVE_TYPE,
-    "verso": TokenType.PRIMITIVE_TYPE,
-    "canção": TokenType.PRIMITIVE_TYPE,
-    "prosa": TokenType.PRIMITIVE_TYPE,
-    "traço": TokenType.PRIMITIVE_TYPE,
-    "suspiro": TokenType.PRIMITIVE_TYPE,
 
-    "coro": TokenType.DATA_STRUCT,
-    "compêndio": TokenType.DATA_STRUCT,
+@dataclass
+class Token:
+    type: TokenType
+    value: str | PrimitiveType | None = field(default=None)
 
-    "se": TokenType.IF,
-    "senão": TokenType.ELSE,
-    "porém": TokenType.ELSE,
-    "enquanto": TokenType.WHILE,
-    "sendo": TokenType.FOR,
-    "então": TokenType.THEN,
 
-    "como": TokenType.EQUAL,
-    "igual": TokenType.EQUAL,
-    "diferente": TokenType.DIFFERENT,
-    "distinto": TokenType.DIFFERENT,
-    "maior": TokenType.GREATER_THAN,
-    "além": TokenType.GREATER_THAN,
-    "aquém": TokenType.LESS_THAN,
-    "menor": TokenType.LESS_THAN,
-    "até": TokenType.LESS_OR_EQUAL,
-    "me": TokenType.GREATER_OR_EQUAL,
+PALAVRAS_RESERVADAS: dict[str, Token] = {
+    "é":       Token(TokenType.DECLARATION),
+    "és":      Token(TokenType.DECLARATION),
+    "seja":    Token(TokenType.DECLARATION),
+    "guarda":  Token(TokenType.DECLARATION),
+    "encerra": Token(TokenType.DECLARATION),
+    "guarde":  Token(TokenType.DECLARATION),
+    "encerre": Token(TokenType.DECLARATION),
 
-    "e": TokenType.AND,
-    "ou": TokenType.OR,
-    "não": TokenType.NOT,
+    "rocha":     Token(TokenType.PRIMITIVE_TYPE, PrimitiveType.INTEGER),
+    "bruma":     Token(TokenType.PRIMITIVE_TYPE, PrimitiveType.FLOAT),
+    "névoa":     Token(TokenType.PRIMITIVE_TYPE, PrimitiveType.FLOAT),
+    "cinza":     Token(TokenType.PRIMITIVE_TYPE, PrimitiveType.FLOAT),
+    "traço":     Token(TokenType.PRIMITIVE_TYPE, PrimitiveType.CHAR),
+    "suspiro":   Token(TokenType.PRIMITIVE_TYPE, PrimitiveType.CHAR),
+    "verso":     Token(TokenType.PRIMITIVE_TYPE, PrimitiveType.STRING),
+    "canção":    Token(TokenType.PRIMITIVE_TYPE, PrimitiveType.STRING),
+    "prosa":     Token(TokenType.PRIMITIVE_TYPE, PrimitiveType.STRING),
+    "dilema":    Token(TokenType.PRIMITIVE_TYPE, PrimitiveType.BOOL),
+    "dualidade": Token(TokenType.PRIMITIVE_TYPE, PrimitiveType.BOOL),
 
-    "verdadeiro": TokenType.BOOLEAN_TRUE,
-    "falso": TokenType.BOOLEAN_FALSE,
+    "coro":      Token(TokenType.DATA_STRUCT),
+    "compêndio": Token(TokenType.DATA_STRUCT),
 
-    "avance": TokenType.CONTINUE,
-    "prossiga": TokenType.CONTINUE,
-    "desista": TokenType.BREAK,
-    "finde": TokenType.BREAK,
-    "devolva": TokenType.RETURN,
-    "entregue": TokenType.RETURN,
-    "retorne": TokenType.RETURN,
-    "volte": TokenType.RETURN,
+    "se":       Token(TokenType.IF),
+    "senão":    Token(TokenType.ELSE),
+    "porém":    Token(TokenType.ELSE),
+    "enquanto": Token(TokenType.WHILE),
+    "sendo":    Token(TokenType.FOR),
+    "então":    Token(TokenType.THEN),
 
-    "a": TokenType.ARTICLE,
-    "o": TokenType.ARTICLE,
-    "um": TokenType.ARTICLE,
-    "uma": TokenType.ARTICLE,
+    "como":      Token(TokenType.EQUAL),
+    "igual":     Token(TokenType.EQUAL),
+    "diferente": Token(TokenType.DIFFERENT),
+    "distinto":  Token(TokenType.DIFFERENT),
+    "maior":     Token(TokenType.GREATER_THAN),
+    "além":      Token(TokenType.GREATER_THAN),
+    "aquém":     Token(TokenType.LESS_THAN),
+    "menor":     Token(TokenType.LESS_THAN),
+    "até":       Token(TokenType.LESS_OR_EQUAL),
+    "me":        Token(TokenType.GREATER_OR_EQUAL),
 
-    "de": TokenType.PREPOSITION,
-    "da": TokenType.PREPOSITION,
+    "e":   Token(TokenType.AND),
+    "ou":  Token(TokenType.OR),
+    "não": Token(TokenType.NOT),
 
-    "que": TokenType.CONJUNCTION,
+    "verdadeiro": Token(TokenType.BOOLEAN_TRUE),
+    "falso":      Token(TokenType.BOOLEAN_FALSE),
+
+    "avance":   Token(TokenType.CONTINUE),
+    "prossiga": Token(TokenType.CONTINUE),
+    "desista":  Token(TokenType.BREAK),
+    "finde":    Token(TokenType.BREAK),
+    "devolva":  Token(TokenType.RETURN),
+    "entregue": Token(TokenType.RETURN),
+    "retorne":  Token(TokenType.RETURN),
+    "volte":    Token(TokenType.RETURN),
+
+    "a":   Token(TokenType.ARTICLE),
+    "o":   Token(TokenType.ARTICLE),
+    "um":  Token(TokenType.ARTICLE),
+    "uma": Token(TokenType.ARTICLE),
+
+    "de": Token(TokenType.PREPOSITION),
+    "da": Token(TokenType.PREPOSITION),
+
+    "que": Token(TokenType.CONJUNCTION),
 
     # As chaves são padrões regex — expressões multi-palavra funcionam naturalmente
-    r"digo\s+que": TokenType.PRINT,
-    "grito": TokenType.PRINT,
-    "gritarei": TokenType.PRINT,
+    r"digo\s+que": Token(TokenType.PRINT),
+    "grito":       Token(TokenType.PRINT),
+    "gritarei":    Token(TokenType.PRINT),
 }

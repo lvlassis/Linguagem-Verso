@@ -1,6 +1,6 @@
 import unittest
 
-from verso.token import tokenize, Token, TokenType
+from verso.token import tokenize, Token, TokenType, PrimitiveType
 
 
 class TestDeclaracao(unittest.TestCase):
@@ -9,7 +9,7 @@ class TestDeclaracao(unittest.TestCase):
         tokens = tokenize("Amor é rocha.\n")
         self.assertEqual(tokens[0], Token(TokenType.VARIABLE, 'amor'))
         self.assertEqual(tokens[1], Token(TokenType.DECLARATION, 'é'))
-        self.assertEqual(tokens[2], Token(TokenType.PRIMITIVE_TYPE, 'rocha'))
+        self.assertEqual(tokens[2], Token(TokenType.PRIMITIVE_TYPE, PrimitiveType.INTEGER))
         self.assertEqual(tokens[3], Token(TokenType.DOT, '.'))
         self.assertEqual(tokens[4], Token(TokenType.EOL, '\n'))
 
@@ -41,34 +41,34 @@ class TestTiposPrimitivos(unittest.TestCase):
         return next(t for t in tokenize(program) if t.type == TokenType.PRIMITIVE_TYPE)
 
     def test_int_rocha(self):
-        self.assertEqual(self._tipo("vida é rocha.\n").value, 'rocha')
+        self.assertEqual(self._tipo("vida é rocha.\n").value, PrimitiveType.INTEGER)
 
     def test_float_bruma(self):
-        self.assertEqual(self._tipo("paixão é bruma.\n").value, 'bruma')
+        self.assertEqual(self._tipo("paixão é bruma.\n").value, PrimitiveType.FLOAT)
 
     def test_float_nevoa(self):
-        self.assertEqual(self._tipo("paixão é névoa.\n").value, 'névoa')
+        self.assertEqual(self._tipo("paixão é névoa.\n").value, PrimitiveType.FLOAT)
 
     def test_float_cinza(self):
-        self.assertEqual(self._tipo("paixão é cinza.\n").value, 'cinza')
+        self.assertEqual(self._tipo("paixão é cinza.\n").value, PrimitiveType.FLOAT)
 
     def test_char_suspiro(self):
-        self.assertEqual(self._tipo("a vida é um suspiro.\n").value, 'suspiro')
+        self.assertEqual(self._tipo("a vida é um suspiro.\n").value, PrimitiveType.CHAR)
 
     def test_char_traco(self):
-        self.assertEqual(self._tipo("a vida é um traço.\n").value, 'traço')
+        self.assertEqual(self._tipo("a vida é um traço.\n").value, PrimitiveType.CHAR)
 
     def test_string_verso(self):
-        self.assertEqual(self._tipo("que o amor seja um verso.\n").value, 'verso')
+        self.assertEqual(self._tipo("que o amor seja um verso.\n").value, PrimitiveType.STRING)
 
     def test_string_cancao(self):
-        self.assertEqual(self._tipo("que o amor seja uma canção.\n").value, 'canção')
+        self.assertEqual(self._tipo("que o amor seja uma canção.\n").value, PrimitiveType.STRING)
 
     def test_bool_dilema(self):
-        self.assertEqual(self._tipo("viver é um dilema.\n").value, 'dilema')
+        self.assertEqual(self._tipo("viver é um dilema.\n").value, PrimitiveType.BOOL)
 
     def test_bool_dualidade(self):
-        self.assertEqual(self._tipo("viver é uma dualidade.\n").value, 'dualidade')
+        self.assertEqual(self._tipo("viver é uma dualidade.\n").value, PrimitiveType.BOOL)
 
 
 class TestLiterais(unittest.TestCase):

@@ -1,9 +1,3 @@
-from dataclasses import dataclass
+from .constants import Token
 
-from .constants import TokenType
-
-
-@dataclass
-class Token:
-    type: TokenType
-    value: str | None = None
+__all__ = ['Token']

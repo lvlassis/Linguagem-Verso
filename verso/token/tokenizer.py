@@ -1,20 +1,14 @@
 import re
 
-from .constants import TokenType, PALAVRAS_RESERVADAS
-from .model import Token
+from .constants import TokenType, PrimitiveType, Token, PALAVRAS_RESERVADAS
 
-# Padrões ordenados do mais longo para o mais curto para garantir que
-# palavras mais específicas (ex: "senão") sejam tentadas antes das mais
-# curtas que as contêm (ex: "se").
-# \b é Unicode-aware no Python 3: reconhece letras acentuadas como parte
-# de palavra, equivalente ao \<...\> do Vim.
 _RESERVED_PATTERN = '|'.join(
     fr'\b(?:{pat})\b' for pat in sorted(PALAVRAS_RESERVADAS, key=len, reverse=True)
 )
 
 
-def _lookup(value: str) -> TokenType:
-    return next(tt for pat, tt in PALAVRAS_RESERVADAS.items() if re.fullmatch(pat, value))
+def _lookup(value: str) -> Token:
+    return next(entry for pat, entry in PALAVRAS_RESERVADAS.items() if re.fullmatch(pat, value))
 
 
 def tokenize(program: str) -> list[Token]:
@@ -35,21 +29,25 @@ def tokenize(program: str) -> list[Token]:
 
     for match in re.finditer(tok_regex, program.lower()):
         kind = match.lastgroup
-        value = match.group()
+        matched = match.group()
 
         if kind in ('WHITESPACE', 'COMMENT'):
             continue
         if kind == 'MISMATCH':
-            raise RuntimeError(f"Erro léxico: expressão não esperada {value!r}")
+            raise RuntimeError(f"Erro léxico: expressão não esperada {matched!r}")
 
         if kind == 'RESERVED':
-            token_type = _lookup(value)
+            entry = _lookup(matched)
+            token_type = entry.type
+            token_value: str | PrimitiveType | None = entry.value if entry.value is not None else matched
         elif kind == 'IDENTIFIER':
             token_type = TokenType.VARIABLE
+            token_value = matched
         else:
             assert kind is not None
             token_type = TokenType[kind]
+            token_value = matched
 
-        tokens.append(Token(token_type, value))
+        tokens.append(Token(token_type, token_value))
 
     return tokens

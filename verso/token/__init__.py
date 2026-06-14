@@ -1,5 +1,4 @@
-from .constants import TokenType, PALAVRAS_RESERVADAS
-from .model import Token
+from .constants import TokenType, PrimitiveType, Token, PALAVRAS_RESERVADAS
 from .tokenizer import tokenize
 
-__all__ = ['TokenType', 'PALAVRAS_RESERVADAS', 'Token', 'tokenize']
+__all__ = ['TokenType', 'PrimitiveType', 'Token', 'PALAVRAS_RESERVADAS', 'tokenize']
