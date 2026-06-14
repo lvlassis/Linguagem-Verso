@@ -1,21 +1,25 @@
-from dataclasses import dataclass
+import re
+from dataclasses import dataclass, replace
 from enum import Enum
 
 
 class TokenType(Enum):
     WEAK = 'WEAK'
     DOT = 'DOT'
-    COMMENT = 'COMMENT'
     DECLARATION = 'DECLARATION'
     VARIABLE = 'VARIABLE'
     EOL = 'EOL'
     PRIMITIVE_TYPE = 'PRIMITIVE_TYPE'
     NUMERICAL_EXPRESSION = 'NUMERICAL_EXPRESSION'
+    IF = 'IF'
+    NOT = 'NOT'
+    PRINT = 'PRINT'
 
 
 class PrimitiveType(Enum):
     INTEGER = 'INTEGER'
     FLOAT = 'FLOAT'
+
 
 
 @dataclass
@@ -79,6 +83,20 @@ def verso_split(line: str) -> list[str]:
     return words
 
 
+_WEAK_TOKEN_DEFINITIONS: list[tuple[str, Token]] = [
+    (r"\.",                    Token(TokenType.DOT)),
+    (r"é|és",                  Token(TokenType.DECLARATION)),
+    (r"rocha",                 Token(TokenType.PRIMITIVE_TYPE, PrimitiveType.INTEGER)),
+    (r"digo que|gritarei",     Token(TokenType.PRINT)),
+    (r"[^\s.]+",               Token(TokenType.WEAK)),
+]
+
+_TOKEN_REGEX = re.compile(
+    "|".join(f"({p})" for p, _ in _WEAK_TOKEN_DEFINITIONS),
+    re.IGNORECASE
+)
+
+
 def tokenize(program: str) -> TokenList:
     """ Função que realiza a etapa de tokenização """
     tokens = TokenList()
@@ -86,10 +104,12 @@ def tokenize(program: str) -> TokenList:
         line = filter_comments(line)
         line_tokens = TokenList()
 
-        for word in verso_split(line):
-            token = tokenize_word_weak(word)
-            if token.type == TokenType.COMMENT:
-                break
+        for m in _TOKEN_REGEX.finditer(line):
+            group_idx = next(i for i, g in enumerate(m.groups()) if g is not None)
+            template = _WEAK_TOKEN_DEFINITIONS[group_idx][1]
+            token = replace(template)
+            if token.type == TokenType.WEAK:
+                token.value = m.group().lower()
             line_tokens.append(token)
 
         for token in tokenize_strong(line_tokens):
@@ -97,18 +117,6 @@ def tokenize(program: str) -> TokenList:
         tokens.append(Token(TokenType.EOL))
 
     return tokens
-
-
-def tokenize_word_weak(word: str) -> Token:
-    """ Tokeniza uma palavra individualmente """
-    word = word.strip().lower()
-    if word == ".":
-        return Token(TokenType.DOT)
-    elif word == "é":
-        return Token(TokenType.DECLARATION)
-    elif word == "rocha":
-        return Token(TokenType.PRIMITIVE_TYPE, PrimitiveType.INTEGER)
-    return Token(TokenType.WEAK, word)
 
 
 def tokenize_strong(line_tokens: TokenList) -> TokenList:
