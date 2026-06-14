@@ -1,15 +1,12 @@
-from verso.tokens import tokenize, verso_split
+from verso.tokens import tokenize
 
 def test_tokenize():
-    programa = """amor é rocha que quando quebra doi no peito. # Comentário"""
+    programa = """amor é rocha que quando quebra doi no peito. """
+    programa = """Amor é pacto ... sagrado. Amor é 10.asdf00 # Comentário\n"""
 
     tokens = tokenize(programa)
     print(tokens)
 
-def test_verso_split():
-    line = "amor é fogo que arde sem se ver."
-    tokens_1 = verso_split(line)
-    print(tokens_1)
 
 test_tokenize()
 

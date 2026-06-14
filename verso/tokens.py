@@ -1,132 +1,57 @@
 from dataclasses import dataclass
 from enum import Enum
+import re
 
+PALAVRAS_RESERVADAS = {
+    'é': 'DECLARATION',
+    'rocha': 'PRIMITIVE_TYPE',
+    'bruma': 'PRIMITIVE_TYPE',
+    'cinza': 'PRIMITIVA_TYPE'
+}
 
 class TokenType(Enum):
-    WEAK = 'WEAK'
     DOT = 'DOT'
-    COMMENT = 'COMMENT'
-    DECLARATION = 'DECLARATION'
-    VARIABLE = 'VARIABLE'
     EOL = 'EOL'
+    VARIABLE = 'VARIABLE'
+    DECLARATION = 'DECLARATION'
     PRIMITIVE_TYPE = 'PRIMITIVE_TYPE'
-    NUMERICAL_EXPRESSION = 'NUMERICAL_EXPRESSION'
-
-
-class PrimitiveType(Enum):
-    INTEGER = 'INTEGER'
-    FLOAT = 'FLOAT'
+    NUMBER = 'NUMBER'
+    ELLIPSE = 'ELLIPSE'
 
 
 @dataclass
 class Token:
     type: TokenType
-    value: str | PrimitiveType | None = None
+    value: str | None = None
 
 
-class TokenList:
-    def __init__(self, tokens: list[Token] | None = None):
-        self._tokens: list[Token] = tokens or []
-
-    def find(self, tipo: TokenType) -> tuple[Token, int] | None:
-        """ Retorna o primeiro token do tipo dado e seu índice, ou None """
-        return next(((t, i) for i, t in enumerate(self._tokens) if t.type == tipo), None)
-
-    def merge(self, start: int, end: int, token_type: TokenType) -> Token:
-        """ Substitui tokens[start:end] por um único token com os valores concatenados """
-        value = " ".join(t.value for t in self._tokens[start:end] if isinstance(t.value, str))
-        merged = Token(token_type, value or None)
-        self._tokens[start:end] = [merged]
-        return merged
-
-    def append(self, token: Token) -> None:
-        self._tokens.append(token)
-
-    def __iter__(self):
-        return iter(self._tokens)
-
-    def __getitem__(self, index):
-        return self._tokens[index]
-
-    def __setitem__(self, index, value):
-        self._tokens[index] = value
-
-    def __len__(self) -> int:
-        return len(self._tokens)
-
-    def __repr__(self) -> str:
-        return repr(self._tokens)
-
-
-def filter_comments(line: str) -> str:
-    """ Remove os comentários de uma linha """
-    return line.split("#")[0].strip()
-
-
-def verso_split(line: str) -> list[str]:
-    """ Realiza a separação inicial em uma linha """
-    line = line.strip()
-    words = []
-    start = 0
-    for i, c in enumerate(line):
-        if c == " ":
-            words.append(line[start:i+1])
-            start = i+1
-        elif c == ".":
-            words.append(line[start:i])
-            words.append(".")
-            start = i+1
-    return words
-
-
-def tokenize(program: str) -> TokenList:
+def tokenize(program: str) -> list[Token]:
     """ Função que realiza a etapa de tokenização """
-    tokens = TokenList()
-    for line in program.splitlines():
-        line = filter_comments(line)
-        line_tokens = TokenList()
+    rules = [
+        ('COMMENT',         r'#.*'),                  
+        ('IDENTIFIER',      r'[a-zA-Z_À-ÿ][a-zA-Z0-9_À-ÿ]*'), # Captura palavras (variáveis E keywords)
+        ('NUMBER',          r'\d+(\.\d+)?'),  
+        ('ELLIPSE',         r'\.\.\.'),        
+        ('DOT',             r'\.'),                
+        ('WHITESPACE',      r'[ \t]+'),                  
+        ('MISMATCH',        r'.'),
+        ('EOL',             r'\n+')
+    ]
 
-        for word in verso_split(line):
-            token = tokenize_word_weak(word)
-            if token.type == TokenType.COMMENT:
-                break
-            line_tokens.append(token)
+    tok_regex = '|'.join(f"(?P<{name}>{rule})" for name, rule in rules)
+    tokens = []
 
-        for token in tokenize_strong(line_tokens):
-            tokens.append(token)
-        tokens.append(Token(TokenType.EOL))
+    for match in re.finditer(tok_regex, program):
+        kind = match.lastgroup
+        value = match.group()
 
+        if kind in ['WHITESPACE', 'COMMENT']:
+            continue
+        elif kind == 'MISMATCH':
+            raise RuntimeError(f"Erro léxico: expressão não esperada {value}")
+        
+        if kind == 'IDENTIFIER':
+            kind = PALAVRAS_RESERVADAS.get(value, 'VARIABLE')
+
+        tokens.append(Token(TokenType[kind], value))
     return tokens
-
-
-def tokenize_word_weak(word: str) -> Token:
-    """ Tokeniza uma palavra individualmente """
-    word = word.strip().lower()
-    if word == ".":
-        return Token(TokenType.DOT)
-    elif word == "é":
-        return Token(TokenType.DECLARATION)
-    elif word == "rocha":
-        return Token(TokenType.PRIMITIVE_TYPE, PrimitiveType.INTEGER)
-    return Token(TokenType.WEAK, word)
-
-
-def tokenize_strong(line_tokens: TokenList) -> TokenList:
-    """ Classifica os Tokens Fracos com base na sintaxe """
-    tokens_classificados = [(t, i) for i, t in enumerate(line_tokens) if t.type != TokenType.WEAK]
-
-    result = next(((t, i) for t, i in tokens_classificados if t.type == TokenType.DECLARATION), None)
-    if result:
-        _, pos = result
-        line_tokens[pos-1].type = TokenType.VARIABLE
-
-        if line_tokens[pos+1].type != TokenType.PRIMITIVE_TYPE:
-            raise SyntaxError("Esperado token de tipo primitivo após declaração")
-
-        if line_tokens[pos+1].value == PrimitiveType.INTEGER:
-            final = line_tokens.find(TokenType.DOT) or line_tokens.find(TokenType.EOL)
-            if final:
-                _, i = final
-                line_tokens.merge(pos+2, i, TokenType.NUMERICAL_EXPRESSION)
-
-    return line_tokens
