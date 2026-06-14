@@ -8,7 +8,7 @@ class TokenType(Enum):
     NUMBER = 'NUMBER'
     ELLIPSE = 'ELLIPSE'
     VARIABLE = 'VARIABLE'
-    DECLARATION = 'DECLARATION'
+    DECL_ATTR = 'DECL_ATTR'
     PRIMITIVE_TYPE = 'PRIMITIVE_TYPE'
     DATA_STRUCT = 'DATA_STRUCT'
 
@@ -65,13 +65,13 @@ class Token:
 
 
 PALAVRAS_RESERVADAS: dict[str, Token] = {
-    "é":       Token(TokenType.DECLARATION),
-    "és":      Token(TokenType.DECLARATION),
-    "seja":    Token(TokenType.DECLARATION),
-    "guarda":  Token(TokenType.DECLARATION),
-    "encerra": Token(TokenType.DECLARATION),
-    "guarde":  Token(TokenType.DECLARATION),
-    "encerre": Token(TokenType.DECLARATION),
+    "é":       Token(TokenType.DECL_ATTR),
+    "és":      Token(TokenType.DECL_ATTR),
+    "seja":    Token(TokenType.DECL_ATTR),
+    "guarda":  Token(TokenType.DECL_ATTR),
+    "encerra": Token(TokenType.DECL_ATTR),
+    "guarde":  Token(TokenType.DECL_ATTR),
+    "encerre": Token(TokenType.DECL_ATTR),
 
     "rocha":     Token(TokenType.PRIMITIVE_TYPE, PrimitiveType.INTEGER),
     "bruma":     Token(TokenType.PRIMITIVE_TYPE, PrimitiveType.FLOAT),
