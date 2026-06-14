@@ -1,12 +1,23 @@
 from verso.token import tokenize
+from verso.sintaxe.parser import Parser
 
-def test_tokenize():
-    programa = """amor é rocha que quando quebra doi no peito. """
-    programa = """Amor é pacto ... sagrado. Amor é sutil # Comentário\n"""
 
-    tokens = tokenize(programa)
+programa = """Amor é rocha. Amor é sutil # Comentário\n"""
+
+def test_tokenize(codigo):
+
+    tokens = tokenize(codigo)
     print(tokens)
 
+def test_parser(codigo):
 
-test_tokenize()
+    tokens = tokenize(codigo)
+    parser = Parser(tokens)
+    program = parser.parse_program()
+
+    print(program)
+
+test_tokenize(programa)
+print("")
+test_parser(programa)
 

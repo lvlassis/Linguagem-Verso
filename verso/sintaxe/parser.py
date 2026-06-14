@@ -1,36 +1,6 @@
-from dataclasses import dataclass
 from verso.token.constants import Token, TokenType
-from verso.sintaxe.constants import SKIP_LIST, EOI_TOKEN_LIST, DECL_TOKEN_LIST
+from verso.sintaxe.constants import SKIP_LIST, EOI_TOKEN_LIST, DECL_TOKEN_LIST, Statement, Expression, Program, VariableDeclaration, Atribuition
 
-class ASTNode:
-    pass
-class Statement(ASTNode):
-    pass
-class Expression(ASTNode):
-    pass
-
-@dataclass
-class Program(ASTNode):
-    instructions: list[Statement]
-
-@dataclass
-class VariableDeclaration(Statement):
-    name: str
-    varType: str
-    value: list[str]
-
-@dataclass
-class Atribuition(Statement):
-    name: str
-    value: list[str]
-
-@dataclass
-class Literal(Expression):
-    value: str
-
-@dataclass
-class Variable(Expression):
-    name: str
 
 class Parser:
     def __init__(self, tokens: list[Token]):
@@ -49,52 +19,45 @@ class Parser:
     
     def get_next_relevant_token(self) -> Token:
         index = 0
-
-        skip_list = [
-            TokenType.ARTICLE,
-            TokenType.PREPOSITION,
-            TokenType.CONJUNCTION
-        ]
-
         while True:
-            if self.pos + index < len(self.tokens):
-                if self.tokens[self.pos + index].type not in skip_list:
-                    return self.tokens[self.pos + index]
-                index += 1
-            else:
+            if self.pos + index >= len(self.tokens):
                 break
+
+            if self.tokens[self.pos + index].type not in SKIP_LIST:
+                return self.tokens[self.pos + index]
+            index += 1
         return None
     
     def go_to_next_relevant_token(self) -> tuple[list[Token], Token]:
         tokens = []
-
         while True:
-            if self.pos < len(self.tokens):
-                if self.tokens[self.pos].type not in SKIP_LIST:
-                    return tokens, self.get_current_token()
-                else:
-                    tokens.append(self.consume_token(SKIP_LIST))
-            else:
+            if self.pos >= len(self.tokens):
                 break
+
+            if self.tokens[self.pos].type not in SKIP_LIST:
+                return tokens, self.get_current_token()
+            
+            tokens.append(self.consume_token(SKIP_LIST))
         return None
     
-    def go_to_end_of_instruction(self) -> tuple[list[Token], Token]:
-        tokens = []
+    def go_to_EOI(self) -> tuple[list[Token], Token]:
+        """Consome todos os tokens até chegar à um '.' ou EOL"""
 
+        tokens = []
         while True:
-            if self.pos < len(self.tokens):
-                if self.tokens[self.pos].type in EOI_TOKEN_LIST:
-                    return tokens, self.get_current_token()
-                else:
-                    tokens.append(self.consume_token())
-            else:
+            if self.pos >= len(self.tokens):
                 break
+
+            if self.tokens[self.pos].type in EOI_TOKEN_LIST:
+                return tokens, self.get_current_token()
+            
+            tokens.append(self.consume_token())
         return None
     
-    def go_to_start_of_next_instruction(self) -> tuple[list[Token], Token]:
+    def go_to_SNI(self) -> tuple[list[Token], Token]:
+        """Consome todos os tokens até chegar ao início da próxima instrução."""
 
         tokens = []
-
         while True:
             if self.pos < len(self.tokens):
                 if self.tokens[self.pos].type not in EOI_TOKEN_LIST:
@@ -141,9 +104,9 @@ class Parser:
                 else:
                     raise SyntaxError(f"Erro sintático: expressão esperada {TokenType.DECL_ATTR}")
             case TokenType.EOL:
-                _,_ = self.go_to_start_of_next_instruction()
+                _,_ = self.go_to_SNI()
             case TokenType.DOT:
-                _,_ = self.go_to_start_of_next_instruction()
+                _,_ = self.go_to_SNI()
             
         return None
     
@@ -154,7 +117,7 @@ class Parser:
 
         if next_relevant_token.type in DECL_TOKEN_LIST:
             varType = self.consume_token()
-            value_tokens, EOI = self.go_to_end_of_instruction()
+            value_tokens, EOI = self.go_to_EOI()
             values = [token.value for token in value_tokens]
             self.consume_token([EOI.type])
 
@@ -164,7 +127,7 @@ class Parser:
                 value=values
             )
         elif next_relevant_token.type == TokenType.VARIABLE:
-            value_tokens, EOI = self.go_to_end_of_instruction()
+            value_tokens, EOI = self.go_to_EOI()
             values = [token.value for token in value_tokens]
             self.consume_token([EOI.type])
 
