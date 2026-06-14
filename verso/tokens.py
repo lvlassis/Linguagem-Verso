@@ -1,22 +1,50 @@
 from dataclasses import dataclass
 from enum import Enum
-import re
 
-PALAVRAS_RESERVADAS = {
-    'é': 'DECLARATION',
-    'rocha': 'PRIMITIVE_TYPE',
-    'bruma': 'PRIMITIVE_TYPE',
-    'cinza': 'PRIMITIVA_TYPE'
-}
+import re
+import json
+from pathlib import Path
+
+dir = Path(__file__).resolve().parent
+file_path = dir / 'palavras_reservadas.json'
+
+with open(file_path, 'r', encoding='utf-8') as file:
+    PALAVRAS_RESERVADAS = json.load(file)
 
 class TokenType(Enum):
     DOT = 'DOT'
     EOL = 'EOL'
+    NUMBER = 'NUMBER'
+    STRUCT = 'DATA_STRUCT'
+    ELLIPSE = 'ELLIPSE'
     VARIABLE = 'VARIABLE'
     DECLARATION = 'DECLARATION'
     PRIMITIVE_TYPE = 'PRIMITIVE_TYPE'
-    NUMBER = 'NUMBER'
-    ELLIPSE = 'ELLIPSE'
+    DATA_STRUCT = 'DATA_STRUCT'
+
+    # Operations
+    IF = 'IF'
+    ELSE = 'ELSE'
+    WHILE = 'WHILE'
+    FOR = 'FOR'
+
+    EQUAL = 'EQUAL'
+    DIFFERENT = 'DIFFERENT'
+    GREATER_THAN = 'GREATER_THAN'
+    LESS_THAN = 'LESS_THAN'
+    GREATER_OR_EQUAL = 'GREATER_OR_EQUAL'
+    LESS_OR_EQUAL = 'LESS_OR_EQUAL'
+
+    AND = 'AND'
+    OR = 'OR'
+    NOT = 'NOT'
+
+    BOOLEAN_TRUE = 'BOOLEAN_TRUE'
+    BOOLEAN_FALSE = 'BOOLEAN_FALSE'
+
+    ARTICLE = 'ARTICLE'
+    PREPOSITION = 'PREPOSITION'
+    CONJUNCTION = 'CONJUNCTION'
 
 
 @dataclass
