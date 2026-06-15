@@ -1,153 +1,166 @@
 # Checklist de implementação — Romântica
 
-> Estágio atual: apenas **análise léxica** (tokenização). Parser e geração de código C ainda não existem.
-> "Implementado" aqui significa: o tokenizador reconhece a palavra e emite o `TokenType` correto.
-> Palavras-chave definidas em `verso/token/constants.py`.
+> Legenda: ✅ implementado em todos os estágios relevantes | 🔶 parcialmente implementado | ❌ não implementado
 
 ---
 
 ## Estágios do compilador
 
-- [x] Análise léxica (tokenização)
-- [ ] Análise sintática (parser)
-- [ ] Análise semântica
-- [ ] Geração de código C
+| Estágio               | Status |
+|-----------------------|:------:|
+| Análise léxica        | ✅ |
+| Análise sintática     | 🔶 |
+| Análise semântica     | 🔶 |
+| Geração de código C   | 🔶 |
 
 ---
 
 ## Tipos de dados
 
-| Tipo C   | Palavras-chave Romântica          | Tokenizado |
-|----------|-----------------------------------|:---:|
-| `int`    | `rocha`                           | ✅ |
-| `float`  | `bruma`, `cinza`                  | ✅ |
-| `float`  | `névoa`                           | ✅ |
-| `char`   | `traço`, `suspiro`                | ✅ |
-| `char[]` | `verso`, `canção`, `prosa`        | ✅ |
-| `bool`   | `dilema`, `dualidade`             | ✅ |
-| `fixed`  | indefinido                        | ❌ (indefinido na spec) |
-
----
-
-## Estruturas de dados
-
-- [x] Array — `coro`, `compêndio`
-- [ ] Matrizes / Multidimensionais
-- [ ] Structs
-- [ ] Dicionários / Hash-tables / Maps
+| Tipo C   | Palavras-chave Romântica     | Léxico | Sintaxe | Semântica | Codegen |
+|----------|------------------------------|:------:|:-------:|:---------:|:-------:|
+| `int`    | `rocha`                      | ✅ | ✅ | ✅ | ✅ |
+| `float`  | `bruma`, `névoa`, `cinza`    | ✅ | ✅ | ✅ | ✅ |
+| `char`   | `traço`, `suspiro`           | ✅ | ✅ | ❌ | ✅ |
+| `char*`  | `verso`, `canção`, `prosa`   | ✅ | ✅ | ❌ | ✅ |
+| `bool`   | `dilema`, `dualidade`        | ✅ | ✅ | ❌ | ✅ |
+| `fixed`  | indefinido                   | ❌ | ❌ | ❌ | ❌ |
 
 ---
 
 ## Declaração e atribuição
 
-### Palavras-chave de atribuição (`DECL_ATTR`)
-
-| Palavra     | Tokenizado |
-|-------------|:---:|
-| `é`, `és`   | ✅ |
-| `seja`      | ✅ |
-| `guarda`, `encerra`  | ✅ |
-| `guarde`, `encerre`  | ✅ |
-
-### Padrões sintáticos (requerem parser)
-
-- [ ] `<var> é <tipo>.` → `tipo var;`
-- [ ] `Que <var> seja <tipo>.` → `tipo var;`
-- [ ] `Que <var> seja <tipo> <adjunto>.` → `tipo var = valor;`
-- [ ] Declaração de array com tamanho
-- [ ] Declaração de array com valores iniciais
+| Padrão                                        | Léxico | Sintaxe | Semântica | Codegen |
+|-----------------------------------------------|:------:|:-------:|:---------:|:-------:|
+| `<var> é <tipo>.`                             | ✅ | ✅ | ✅ | ✅ |
+| `Que <var> seja <tipo>.`                      | ✅ | ✅ | ✅ | ✅ |
+| `<var> é <tipo> <expr-numérica>.`             | ✅ | ✅ | ✅ | ✅ |
+| `<var> é <valor-variável>.`                   | ✅ | ✅ | ✅ | ✅ |
+| `<var> é <expr-numérica>.` (atribuição)       | ✅ | ✅ | ✅ | ✅ |
+| `<var> é <literal-numérico>.`                 | ✅ | ✅ | ✅ | ✅ |
+| `<var> é "<string>".`                         | ❌ | ❌ | ❌ | ❌ |
+| Declaração de array com tamanho               | ✅ | ❌ | ❌ | ❌ |
+| Declaração de array com valores iniciais      | ✅ | ❌ | ❌ | ❌ |
 
 ---
 
 ## Literais
 
-- [x] Inteiro — ex: `42`
-- [x] Float — ex: `3.14`
-- [x] Booleano — `verdadeiro`, `falso`
-- [ ] String literal — `"..."` (aspas causam erro léxico)
-- [ ] Char literal — `'...'` (aspas causam erro léxico)
-- [ ] Apelidos booleanos — ex: `glórias`, `vitórias` (true); `derrotas`, `tristezas` (false)
+| Literal            | Léxico | Sintaxe | Semântica | Codegen |
+|--------------------|:------:|:-------:|:---------:|:-------:|
+| Inteiro (`42`)     | ✅ | ✅ | ✅ | ✅ |
+| Float (`3.14`)     | ✅ | ✅ | ✅ | ✅ |
+| Booleano (`verdadeiro`, `falso`) | ✅ | ✅ | ✅ | ✅ |
+| String (`"..."`)   | ❌ | ❌ | ❌ | ❌ |
+| Char (`'...'`)     | ❌ | ❌ | ❌ | ❌ |
+| Apelidos booleanos (`glórias`, `derrotas`…) | ❌ | ❌ | ❌ | ❌ |
 
 ---
 
-## Operadores aritméticos
+## Expressões numéricas poéticas
 
-> Nenhum operador aritmético está definido na spec ainda (marcados como `???` no rascunho).
-
-- [ ] Soma
-- [ ] Subtração
-- [ ] Multiplicação
-- [ ] Divisão
-- [ ] Resto
-
----
-
-## Operadores de comparação
-
-| Operador       | Palavras-chave              | Tokenizado |
-|----------------|-----------------------------|:---:|
-| `==`           | `igual`, `como`             | ✅ |
-| `!=`           | `diferente`, `distinto`     | ✅ |
-| `>`            | `maior`, `além`             | ✅ |
-| `<`            | `menor`, `aquém`            | ✅ |
-| `<=`           | `até`                       | ✅ |
-| `>=`           | `me`                        | ✅ |
+| Funcionalidade                               | Semântica | Codegen |
+|----------------------------------------------|:---------:|:-------:|
+| Avaliação por contagem de letras (int)       | ✅ | ✅ |
+| Avaliação por contagem de letras (float, `...`) | ✅ | ✅ |
+| Expressão em declaração                      | ✅ | ✅ |
+| Expressão em atribuição                      | ✅ | ✅ |
 
 ---
 
-## Operadores lógicos
+## Operadores
 
-| Operador | Palavra-chave | Tokenizado |
-|----------|---------------|:---:|
-| `&&`     | `e`           | ✅ |
-| `\|\|`   | `ou`          | ✅ |
-| `!`      | `não`         | ✅ |
+### Comparação
+
+| Operador | Palavras-chave          | Léxico | Codegen (condições) |
+|----------|-------------------------|:------:|:-------------------:|
+| `==`     | `igual`, `como`         | ✅ | ✅ |
+| `!=`     | `diferente`, `distinto` | ✅ | ✅ |
+| `>`      | `maior`, `além`         | ✅ | ✅ |
+| `<`      | `menor`, `aquém`        | ✅ | ✅ |
+| `<=`     | `até`                   | ✅ | ✅ |
+| `>=`     | `me`                    | ✅ | ✅ |
+
+### Lógicos
+
+| Operador | Palavra-chave | Léxico | Codegen (condições) |
+|----------|---------------|:------:|:-------------------:|
+| `&&`     | `e`           | ✅ | ✅ |
+| `\|\|`   | `ou`          | ✅ | ✅ |
+| `!`      | `não`         | ✅ | ✅ |
+
+### Aritméticos
+
+> Nenhum operador aritmético está definido na spec ainda.
+
+| Operador | Status |
+|----------|:------:|
+| Soma, subtração, multiplicação, divisão, resto | ❌ (indefinido na spec) |
 
 ---
 
 ## Fluxo de controle
 
-| Estrutura  | Romântica                      | Tokenizado |
-|------------|--------------------------------|:---:|
-| `if`       | `se`                           | ✅ |
-| `else`     | `senão`                        | ✅ |
-| `else if`  | `porém, se` / `porém, caso`   | ❌ (multi-palavra, não suportado) |
-| `while`    | `enquanto`                     | ✅ |
-| `for`      | `sendo`                        | ✅ |
-| (bloco `if`/`while`) | `então`            | ✅ |
-| `}`        | `.` (ponto final)              | ✅ |
+| Estrutura     | Romântica                   | Léxico | Sintaxe | Semântica | Codegen |
+|---------------|-----------------------------|:------:|:-------:|:---------:|:-------:|
+| `if`          | `se … então`                | ✅ | ❌ | ❌ | ❌ |
+| `else`        | `senão`, `porém`            | ✅ | ❌ | ❌ | ❌ |
+| `else if`     | `porém, se` / `porém, caso` | ❌ | ❌ | ❌ | ❌ |
+| `while`       | `enquanto`                  | ✅ | ✅ | ✅ | ✅ |
+| `for`         | `sendo`                     | ✅ | ❌ | ❌ | ❌ |
+| fechamento    | `.` (ponto final)           | ✅ | ✅ | — | — |
+
+> `for` não tem sintaxe definida na spec além da keyword `sendo`.
 
 ---
 
 ## Desvios de fluxo
 
-| Instrução  | Palavras-chave                           | Tokenizado |
-|------------|------------------------------------------|:---:|
-| `return`   | `retorne`, `volte`, `devolva`, `entregue`| ✅ |
-| `break`    | `desista`, `finde`                       | ✅ |
-| `continue` | `avance`, `prossiga`                     | ✅ |
+| Instrução  | Palavras-chave                              | Léxico | Sintaxe | Semântica | Codegen |
+|------------|---------------------------------------------|:------:|:-------:|:---------:|:-------:|
+| `return`   | `retorne`, `volte`, `devolva`, `entregue`   | ✅ | ✅ | ✅ | ✅ |
+| `break`    | `desista`, `finde`                          | ✅ | ✅ | ✅ | ✅ |
+| `continue` | `avance`, `prossiga`                        | ✅ | ✅ | ✅ | ✅ |
 
 ---
 
 ## Saída
 
-| Instrução | Romântica              | Tokenizado |
-|-----------|------------------------|:---:|
-| `print`   | `gritarei`             | ❌ |
-| `print`   | `digo que`             | ❌ (multi-palavra) |
+| Instrução | Romântica                        | Léxico | Sintaxe | Semântica | Codegen |
+|-----------|----------------------------------|:------:|:-------:|:---------:|:-------:|
+| `printf`  | `grito`, `gritarei`, `digo que`  | ✅ | ✅ | ✅ | ✅ |
 
 ---
 
 ## Funções
 
-- [ ] Definição de função
-- [ ] Chamada de função
-- [ ] Parâmetros e retorno
+| Funcionalidade          | Status |
+|-------------------------|:------:|
+| Definição de função     | ❌ |
+| Chamada de função       | ❌ |
+| Parâmetros e retorno    | ❌ |
+
+---
+
+## Análise semântica — verificações
+
+| Verificação                                     | Status |
+|-------------------------------------------------|:------:|
+| Tabela de símbolos (declaração)                 | ✅ |
+| Re-declaração de variável                       | ✅ |
+| Uso de variável não declarada (atribuição)      | ✅ |
+| Compatibilidade de tipos (atribuição)           | ✅ |
+| Escopo de bloco (`while`)                       | ✅ |
+| Verificação de variáveis na condição do while   | ❌ |
+| Escopo de bloco (`if`/`for`)                    | ❌ |
+| Inferência de tipo de expressões                | ❌ |
 
 ---
 
 ## Outros
 
-- [x] Comentários — `#`
-- [x] Reticências — `...` (`ELLIPSE`)
-- [ ] Pronomes — `Este`, `Ela`, etc. como alias de variável (na spec como "provavelmente não vai dar tempo")
+| Funcionalidade                     | Status |
+|------------------------------------|:------:|
+| Comentários (`#`)                  | ✅ |
+| Reticências (`...`) — float        | ✅ |
+| Pronomes (`Este`, `Ela`…)          | ❌ (fora do escopo) |

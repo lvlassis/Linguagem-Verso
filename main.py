@@ -4,9 +4,8 @@ from verso.token import tokenize
 from verso.sintaxe.parser import Parser
 
 
-programa = """Amor é rocha em chamas. 
-Amor é sutil
-Amor é carinhoso
+programa = """amor é rocha.
+digo que te amo.
 """
 
 def test_tokenize(codigo):

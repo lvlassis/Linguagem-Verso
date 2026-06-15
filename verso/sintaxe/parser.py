@@ -1,11 +1,17 @@
 from verso.token.constants import Token, TokenType
-from verso.sintaxe.constants import SKIP_LIST, EOI_TOKEN_LIST, TYPE_TOKEN_LIST, Statement, Expression, Program, VariableDeclaration, Attribution
+from verso.sintaxe.constants import (
+    SKIP_LIST, EOI_TOKEN_LIST, TYPE_TOKEN_LIST,
+    Statement, Expression, Program,
+    VariableDeclaration, Attribution, WhileLoop,
+    PrintStatement, BreakStatement, ContinueStatement, ReturnStatement,
+)
 
 
 class Parser:
     def __init__(self, tokens: list[Token]):
         self.tokens = tokens
         self.pos = 0
+        self._last_eoi: TokenType | None = None
 
     def get_current_token(self) -> Token|None:
         if self.pos < len(self.tokens):
@@ -93,6 +99,16 @@ class Parser:
         match token.type:
             case TokenType.IF:
                 pass
+            case TokenType.WHILE:
+                return self.parse_while()
+            case TokenType.PRINT:
+                return self.parse_print()
+            case TokenType.BREAK:
+                return self.parse_break()
+            case TokenType.CONTINUE:
+                return self.parse_continue()
+            case TokenType.RETURN:
+                return self.parse_return()
             case TokenType.VARIABLE:
                 next_token = self.get_next_token()
                 if next_token.type == TokenType.DECL_ATTR:
@@ -103,7 +119,7 @@ class Parser:
                 self.go_to_SNI()
             case TokenType.DOT:
                 self.go_to_SNI()
-            
+
         return None
     
     def parse_decl_attr(self) -> Statement:
@@ -115,7 +131,7 @@ class Parser:
             varType = self.consume_token()
             value_tokens, EOI = self.go_to_EOI()
             values = [token.value for token in value_tokens]
-
+            self._last_eoi = EOI.type
             self.consume_token([EOI.type])
 
             return VariableDeclaration(
@@ -126,10 +142,62 @@ class Parser:
         else:
             value_tokens, EOI = self.go_to_EOI()
             values = [token.value for token in value_tokens]
-
+            self._last_eoi = EOI.type
             self.consume_token([EOI.type])
 
             return Attribution(
                 name=first_token.value,
                 value=values
             )
+
+    def parse_print(self) -> PrintStatement:
+        self.consume_token([TokenType.PRINT])
+        value_tokens, EOI = self.go_to_EOI()
+        args = [t.value for t in value_tokens]
+        self._last_eoi = EOI.type
+        self.consume_token([EOI.type])
+        return PrintStatement(args=args)
+
+    def parse_break(self) -> BreakStatement:
+        self.consume_token([TokenType.BREAK])
+        _, EOI = self.go_to_EOI()
+        self._last_eoi = EOI.type
+        self.consume_token([EOI.type])
+        return BreakStatement()
+
+    def parse_continue(self) -> ContinueStatement:
+        self.consume_token([TokenType.CONTINUE])
+        _, EOI = self.go_to_EOI()
+        self._last_eoi = EOI.type
+        self.consume_token([EOI.type])
+        return ContinueStatement()
+
+    def parse_return(self) -> ReturnStatement:
+        self.consume_token([TokenType.RETURN])
+        value_tokens, EOI = self.go_to_EOI()
+        value = [t.value for t in value_tokens]
+        self._last_eoi = EOI.type
+        self.consume_token([EOI.type])
+        return ReturnStatement(value=value)
+
+    def parse_while(self) -> WhileLoop:
+        self.consume_token([TokenType.WHILE])
+
+        condition_tokens, eoi = self.go_to_EOI()
+        condition = [t for t in condition_tokens if t.type not in SKIP_LIST]
+        self.consume_token([eoi.type])
+        self.go_to_SNI()
+
+        body = []
+        while self.get_current_token():
+            if self.get_current_token().type == TokenType.DOT:
+                self.go_to_SNI()
+                break
+            self._last_eoi = None
+            instruction = self.parse_instructions()
+            if instruction is not None:
+                body.append(instruction)
+            if self._last_eoi == TokenType.DOT:
+                break
+
+        return WhileLoop(condition=condition, body=body)

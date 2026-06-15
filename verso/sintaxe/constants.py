@@ -48,6 +48,12 @@ class Variable(Expression):
     name: str
 
 @dataclass
+class WhileLoop(Statement):
+    condition: list
+    body: list
+
+
+@dataclass
 class BinaryOperation(Expression):
     firstOperator: Expression
     operation: str
@@ -57,3 +63,19 @@ class BinaryOperation(Expression):
 class MonadicOperation(Expression):
     operator: Expression
     operation: str
+
+@dataclass
+class PrintStatement(Statement):
+    args: list
+
+@dataclass
+class BreakStatement(Statement):
+    pass
+
+@dataclass
+class ContinueStatement(Statement):
+    pass
+
+@dataclass
+class ReturnStatement(Statement):
+    value: list

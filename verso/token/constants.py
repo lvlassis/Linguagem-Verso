@@ -110,8 +110,8 @@ PALAVRAS_RESERVADAS: dict[str, Token] = {
     "ou":  Token(TokenType.OR),
     "não": Token(TokenType.NOT),
 
-    "verdadeiro": Token(TokenType.BOOLEAN_TRUE),
-    "falso":      Token(TokenType.BOOLEAN_FALSE),
+    "verdadeiro": Token(TokenType.BOOLEAN_TRUE, '1'),
+    "falso":      Token(TokenType.BOOLEAN_FALSE, '0'),
 
     "avance":   Token(TokenType.CONTINUE),
     "prossiga": Token(TokenType.CONTINUE),
