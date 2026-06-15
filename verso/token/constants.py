@@ -103,11 +103,12 @@ PALAVRAS_RESERVADAS: dict[str, Token] = {
     "sendo":    Token(TokenType.FOR),
     "então":    Token(TokenType.THEN),
 
-    "acresce":  Token(TokenType.SUM),
-    "deduz":    Token(TokenType.SUB),
-    "amplia":   Token(TokenType.MULT),
-    "reparte":  Token(TokenType.DIV),
-    "resta":    Token(TokenType.REST),
+    r"acrescid[oa]s?\s+d[eao]s?":           Token(TokenType.SUM),
+    r"privad[oa]s?\s+d[eao]s?":             Token(TokenType.SUB), 
+    r"despid[oa]s?\s+d[eao]s?":             Token(TokenType.SUB),
+    r"ecoad[oa]s?\s(?:por|pel[ao]s?)":      Token(TokenType.MULT),
+    r"partilhad[oa]s?\s+(?:por|pel[ao]s?)":      Token(TokenType.DIV),
+    r"restando\s+d[eao]s?":                 Token(TokenType.REST),
 
     "como":      Token(TokenType.EQUAL),
     "igual":     Token(TokenType.EQUAL),
