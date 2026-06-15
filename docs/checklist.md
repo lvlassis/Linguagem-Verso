@@ -91,11 +91,15 @@
 
 ### Aritméticos
 
-> Nenhum operador aritmético está definido na spec ainda.
+| Operador | Palavra-chave | Léxico | Sintaxe | Semântica | Codegen |
+|----------|---------------|:------:|:-------:|:---------:|:-------:|
+| `+`      | `acresce`     | ✅ | 🔶 | ❌ | ❌ |
+| `-`      | `deduz`       | ✅ | 🔶 | ❌ | ❌ |
+| `*`      | `amplia`      | ✅ | 🔶 | ❌ | ❌ |
+| `/`      | `reparte`     | ✅ | 🔶 | ❌ | ❌ |
+| `%`      | `resta`       | ✅ | 🔶 | ❌ | ❌ |
 
-| Operador | Status |
-|----------|:------:|
-| Soma, subtração, multiplicação, divisão, resto | ❌ (indefinido na spec) |
+> Sintaxe 🔶: operadores são parseados como `BinaryOperation` dentro de expressões de condição (`se … então`). Não são reconhecidos em declarações nem atribuições.
 
 ---
 
@@ -103,12 +107,14 @@
 
 | Estrutura     | Romântica                   | Léxico | Sintaxe | Semântica | Codegen |
 |---------------|-----------------------------|:------:|:-------:|:---------:|:-------:|
-| `if`          | `se … então`                | ✅ | ❌ | ❌ | ❌ |
-| `else`        | `senão`, `porém`            | ✅ | ❌ | ❌ | ❌ |
+| `if`          | `se … então`                | ✅ | ✅ | 🔶 | 🔶 |
+| `else`        | `senão`, `porém`            | ✅ | ✅ | 🔶 | 🔶 |
 | `else if`     | `porém, se` / `porém, caso` | ❌ | ❌ | ❌ | ❌ |
 | `while`       | `enquanto`                  | ✅ | ✅ | ✅ | ✅ |
 | `for`         | `sendo`                     | ✅ | ❌ | ❌ | ❌ |
 | fechamento    | `.` (ponto final)           | ✅ | ✅ | — | — |
+
+> `if`/`else` marcados como 🔶: corpo é parseado e visitado com escopo próprio, mas a condição não é analisada na semântica nem gerada no codegen (placeholder `(...)`).
 
 > `for` não tem sintaxe definida na spec além da keyword `sendo`.
 
@@ -151,8 +157,9 @@
 | Uso de variável não declarada (atribuição)      | ✅ |
 | Compatibilidade de tipos (atribuição)           | ✅ |
 | Escopo de bloco (`while`)                       | ✅ |
-| Verificação de variáveis na condição do while   | ❌ |
-| Escopo de bloco (`if`/`for`)                    | ❌ |
+| Escopo de bloco (`if`/`else`)                   | ✅ |
+| Verificação de variáveis/tipos na condição      | ❌ |
+| Escopo de bloco (`for`)                         | ❌ |
 | Inferência de tipo de expressões                | ❌ |
 
 ---
