@@ -255,7 +255,11 @@ class Parser:
         _, next_relevant_token = self.go_to_next_relevant_token()
         if next_relevant_token.type in TYPE_TOKEN_LIST:
             varType = self.consume_token()
-            value_tokens, EOI = self.go_to_EOI()
+            tokens = self.go_to_EOI()
+            if tokens is None:
+                raise SyntaxError("Espera-se um \\n ou um . ao fim da instrução. Nenhum foi fornecido.")
+            
+            value_tokens, EOI = tokens
             values = [token.value for token in value_tokens]
             self._last_eoi = EOI.type
 
@@ -265,7 +269,11 @@ class Parser:
                 value=values
             )
         else:
-            value_tokens, EOI = self.go_to_EOI()
+            tokens = self.go_to_EOI()
+            if tokens is None:
+                raise SyntaxError("Espera-se um \\n ou um . ao fim da instrução. Nenhum foi fornecido.")
+            
+            value_tokens, EOI = tokens
             values = [token.value for token in value_tokens]
             self._last_eoi = EOI.type
 
@@ -278,7 +286,11 @@ class Parser:
 
     def parse_print(self) -> PrintStatement:
         self.consume_token([TokenType.PRINT])
-        value_tokens, EOI = self.go_to_EOI()
+        tokens = self.go_to_EOI()
+        if tokens is None:
+            raise SyntaxError("Espera-se um \\n ou um . ao fim da instrução. Nenhum foi fornecido.")
+        
+        value_tokens, EOI = tokens
         args = [t.value for t in value_tokens]
         self._last_eoi = EOI.type
         self.consume_token([EOI.type])
@@ -286,21 +298,33 @@ class Parser:
 
     def parse_break(self) -> BreakStatement:
         self.consume_token([TokenType.BREAK])
-        _, EOI = self.go_to_EOI()
+        tokens = self.go_to_EOI()
+        if tokens is None:
+            raise SyntaxError("Espera-se um \\n ou um . ao fim da instrução. Nenhum foi fornecido.")
+        
+        _, EOI = tokens
         self._last_eoi = EOI.type
         self.consume_token([EOI.type])
         return BreakStatement()
 
     def parse_continue(self) -> ContinueStatement:
         self.consume_token([TokenType.CONTINUE])
-        _, EOI = self.go_to_EOI()
+        tokens = self.go_to_EOI()
+        if tokens is None:
+            raise SyntaxError("Espera-se um \\n ou um . ao fim da instrução. Nenhum foi fornecido.")
+        
+        _, EOI = tokens
         self._last_eoi = EOI.type
         self.consume_token([EOI.type])
         return ContinueStatement()
 
     def parse_return(self) -> ReturnStatement:
         self.consume_token([TokenType.RETURN])
-        value_tokens, EOI = self.go_to_EOI()
+        tokens = self.go_to_EOI()
+        if tokens is None:
+            raise SyntaxError("Espera-se um \\n ou um . ao fim da instrução. Nenhum foi fornecido.")
+        
+        value_tokens, EOI = tokens
         value = [t.value for t in value_tokens]
         self._last_eoi = EOI.type
         self.consume_token([EOI.type])
