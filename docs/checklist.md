@@ -40,7 +40,7 @@
 
 ## Declaração e atribuição
 
-### Palavras-chave de atribuição (`DECLARATION`)
+### Palavras-chave de atribuição (`DECL_ATTR`)
 
 | Palavra     | Tokenizado |
 |-------------|:---:|

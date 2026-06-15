@@ -1,0 +1,3 @@
+class SemanticError:
+    description: str
+

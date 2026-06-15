@@ -2,15 +2,15 @@ from verso.token.constants import TokenType
 from dataclasses import dataclass
 
 SKIP_LIST = [
-            TokenType.ARTICLE,
-            TokenType.PREPOSITION,
-            TokenType.CONJUNCTION
-        ]
+    TokenType.ARTICLE,
+    TokenType.PREPOSITION,
+    TokenType.CONJUNCTION
+]
 
 EOI_TOKEN_LIST = [
-            TokenType.EOL,
-            TokenType.DOT
-        ]
+    TokenType.EOL,
+    TokenType.DOT
+]
 
 DECL_TOKEN_LIST = [
     TokenType.PRIMITIVE_TYPE,
@@ -35,7 +35,7 @@ class VariableDeclaration(Statement):
     value: list[str]
 
 @dataclass
-class Atribuition(Statement):
+class Attribution(Statement):
     name: str
     value: list[str]
 
