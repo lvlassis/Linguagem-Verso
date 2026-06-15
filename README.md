@@ -4,13 +4,9 @@ Compilador da linguagem Romântica
 
 Este repositório contém o projeto final da disciplina de Linguagens Formais ministrada pelo professor Maurício em 2026-1.
 
-## Objetivos
+## Sintaxe
 
-- [x] 1. Delimitar o que a linguagem será capaz de descrever
-- [x] 2. Definir a sintaxe da linguagem
-
-## Escopo
-_Anotar as repostas dos objetivos 1 e 2._
+Veja a sintaxe em [[docs/sintaxe.md|Sintaxe]]
 
 ## Autores
 
