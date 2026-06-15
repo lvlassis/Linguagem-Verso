@@ -14,6 +14,7 @@ from verso.sintaxe.constants import (
     BreakStatement,
     ContinueStatement,
     ReturnStatement,
+    IfBody,
 )
 
 __all__ = [
@@ -21,4 +22,5 @@ __all__ = [
     'Program', 'VariableDeclaration', 'Attribution', 'WhileLoop',
     'Literal', 'Variable', 'BinaryOperation', 'MonadicOperation',
     'PrintStatement', 'BreakStatement', 'ContinueStatement', 'ReturnStatement',
+    'IfBody',
 ]

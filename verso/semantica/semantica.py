@@ -1,7 +1,7 @@
 from verso.semantica.constants import SemanticError
 from verso.ast import (
     Program, Statement,
-    VariableDeclaration, Attribution, WhileLoop,
+    VariableDeclaration, Attribution, WhileLoop, IfBody,
     PrintStatement, BreakStatement, ContinueStatement, ReturnStatement,
 )
 from verso.token.constants import PrimitiveType
@@ -58,6 +58,8 @@ class SemanticAnalyzer:
                 return self._visit_attribution(node)
             case WhileLoop():
                 return self._visit_while(node)
+            case IfBody():
+                return self._visit_if(node)
             case PrintStatement():
                 return self._visit_print(node)
             case BreakStatement() | ContinueStatement():
@@ -109,6 +111,19 @@ class SemanticAnalyzer:
                     f"Tipo incompatível: '{val}' é {val_type.value}, "
                     f"mas '{node.name}' espera {declared_type.value}."
                 ))
+        return errors
+
+    def _visit_if(self, node: IfBody) -> list[SemanticError]:
+        self._push_scope()
+        errors = []
+        for stmt in node.positive_instructions:
+            errors += self._visit(stmt)
+        self._pop_scope()
+        if node.negative_instructions:
+            self._push_scope()
+            for stmt in node.negative_instructions:
+                errors += self._visit(stmt)
+            self._pop_scope()
         return errors
 
     def _visit_while(self, node: WhileLoop) -> list[SemanticError]:

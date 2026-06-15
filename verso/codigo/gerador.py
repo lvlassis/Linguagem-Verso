@@ -1,6 +1,6 @@
 from verso.ast import (
     Program, Statement,
-    VariableDeclaration, Attribution, WhileLoop,
+    VariableDeclaration, Attribution, WhileLoop, IfBody,
     PrintStatement, BreakStatement, ContinueStatement, ReturnStatement,
 )
 from verso.token.constants import Token, TokenType, PrimitiveType
@@ -51,6 +51,8 @@ class GeradorCodigo:
                 return 'continue;'
             case ReturnStatement():
                 return self._gerar_return(node)
+            case IfBody():
+                return self._gerar_if(node)
         raise NotImplementedError(f"Geração não implementada para {type(node).__name__}")
 
     def _gerar_declaracao(self, node: VariableDeclaration) -> str:
@@ -61,6 +63,14 @@ class GeradorCodigo:
 
     def _gerar_atribuicao(self, node: Attribution) -> str:
         return f'{node.name} = {" ".join(str(v) for v in node.value)};'
+
+    def _gerar_if(self, node: IfBody) -> str:
+        corpo = '\n'.join(f'    {self._visitar(s)}' for s in node.positive_instructions)
+        resultado = f'if (...) {{\n{corpo}\n}}'
+        if node.negative_instructions:
+            senao = '\n'.join(f'    {self._visitar(s)}' for s in node.negative_instructions)
+            resultado += f' else {{\n{senao}\n}}'
+        return resultado
 
     def _gerar_while(self, node: WhileLoop) -> str:
         cond = self._gerar_condicao(node.condition)
