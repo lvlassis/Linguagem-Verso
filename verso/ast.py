@@ -11,6 +11,7 @@ from verso.sintaxe.constants import (
     BinaryOperation,
     MonadicOperation,
     PrintStatement,
+    ScanStatement,
     BreakStatement,
     ContinueStatement,
     ReturnStatement,
@@ -21,6 +22,6 @@ __all__ = [
     'ASTNode', 'Statement', 'Expression',
     'Program', 'VariableDeclaration', 'Attribution', 'WhileLoop',
     'Literal', 'Variable', 'BinaryOperation', 'MonadicOperation',
-    'PrintStatement', 'BreakStatement', 'ContinueStatement', 'ReturnStatement',
+    'PrintStatement', 'ScanStatement', 'BreakStatement', 'ContinueStatement', 'ReturnStatement',
     'IfBody',
 ]

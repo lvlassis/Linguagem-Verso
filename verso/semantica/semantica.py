@@ -2,7 +2,7 @@ from verso.semantica.constants import SemanticError
 from verso.ast import (
     Program, Statement, Expression,
     VariableDeclaration, Attribution, WhileLoop, IfBody,
-    PrintStatement, BreakStatement, ContinueStatement, ReturnStatement,
+    PrintStatement, ScanStatement, BreakStatement, ContinueStatement, ReturnStatement,
     BinaryOperation, MonadicOperation, Literal,
 )
 from verso.token.constants import PrimitiveType, TokenType, Token
@@ -74,6 +74,8 @@ class SemanticAnalyzer:
                 return self._visit_if(node)
             case PrintStatement():
                 return self._visit_print(node)
+            case ScanStatement():
+                return self._visit_scan(node)
             case BreakStatement() | ContinueStatement():
                 return []
             case ReturnStatement():
@@ -147,10 +149,7 @@ class SemanticAnalyzer:
         return errors
 
     def _visit_while(self, node: WhileLoop) -> list[SemanticError]:
-        errors = []
-        for token in node.condition.value:
-            if isinstance(token, Token) and token.type == TokenType.VARIABLE and not self._is_declared(token.value):
-                errors.append(SemanticError(f"'{token.value}' não foi declarada."))
+        _, errors = self._verificar_expressao(node.condition)
 
         self._push_scope()
         for stmt in node.body:
@@ -161,6 +160,8 @@ class SemanticAnalyzer:
     def _verificar_expressao(self, node: Expression) -> tuple[PrimitiveType | None, list[SemanticError]]:
         match node:
             case Literal():
+                if isinstance(node.value, Token):
+                    return PrimitiveType.BOOL, []
                 if isinstance(node.value, list):
                     errors, tipo = [], None
                     for nome in node.value:
@@ -212,6 +213,15 @@ class SemanticAnalyzer:
 
     def _visit_print(self, node: PrintStatement) -> list[SemanticError]:
         return []
+
+    def _visit_scan(self, node: ScanStatement) -> list[SemanticError]:
+        if not isinstance(node.args, Literal) or not isinstance(node.args.value, list):
+            return []
+        errors = []
+        for nome in node.args.value:
+            if isinstance(nome, str) and not self._is_declared(nome) and not self._is_numeric_literal(nome):
+                errors.append(SemanticError(f"'{nome}' não foi declarada."))
+        return errors
 
     def _visit_return(self, node: ReturnStatement) -> list[SemanticError]:
         return []
