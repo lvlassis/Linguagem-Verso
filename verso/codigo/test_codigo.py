@@ -233,5 +233,36 @@ class TestWhile(unittest.TestCase):
         self.assertEqual(_compilar(fonte), esperado)
 
 
+class TestScan(unittest.TestCase):
+
+    def test_escuto(self):
+        self.assertEqual(_compilar("escuto amor.\n"), 'scanf("%s", &amor);')
+
+    def test_escute(self):
+        self.assertEqual(_compilar("escute amor.\n"), 'scanf("%s", &amor);')
+
+    def test_ouço(self):
+        self.assertEqual(_compilar("ouço amor.\n"), 'scanf("%s", &amor);')
+
+    def test_ouça(self):
+        self.assertEqual(_compilar("ouça amor.\n"), 'scanf("%s", &amor);')
+
+    def test_escuto_com_artigo(self):
+        self.assertEqual(_compilar("escuto o amor.\n"), 'scanf("%s", &amor);')
+
+    def test_ouço_com_artigo(self):
+        self.assertEqual(_compilar("ouço o amor.\n"), 'scanf("%s", &amor);')
+
+    def test_scan_apos_declaracao(self):
+        fonte = "amor é verso.\nescuto amor.\n"
+        esperado = "char* amor;\n" + 'scanf("%s", &amor);'
+        self.assertEqual(_compilar(fonte), esperado)
+
+    def test_scan_no_while(self):
+        fonte = "amor é verso.\nenquanto verdadeiro\nescuto amor.\n"
+        esperado = "char* amor;\nwhile (true) {\n    " + 'scanf("%s", &amor);' + "\n}"
+        self.assertEqual(_compilar(fonte), esperado)
+
+
 if __name__ == '__main__':
     unittest.main()

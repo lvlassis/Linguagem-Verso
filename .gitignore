@@ -4,3 +4,4 @@ rascunhos.py
 dist/
 build/
 *.spec
+bin/

@@ -197,6 +197,39 @@ class TestDesvios(unittest.TestCase):
     def test_break_finde(self):
         self.assertEqual(self._tipo("finde\n"), TokenType.BREAK)
 
+
+class TestEntrada(unittest.TestCase):
+
+    def _tipo(self, program: str) -> TokenType:
+        return tokenize(program)[0].type
+
+    def test_escuto(self):
+        tokens = tokenize("escuto amor\n")
+        self.assertEqual(tokens[0].type, TokenType.SCAN)
+
+    def test_escute(self):
+        tokens = tokenize("escute amor\n")
+        self.assertEqual(tokens[0].type, TokenType.SCAN)
+
+    def test_ouço(self):
+        tokens = tokenize("ouço amor\n")
+        self.assertEqual(tokens[0].type, TokenType.SCAN)
+
+    def test_ouça(self):
+        tokens = tokenize("ouça amor\n")
+        self.assertEqual(tokens[0].type, TokenType.SCAN)
+
+    def test_escuto_com_artigo_emite_token_unico(self):
+        # "escuto o" deve virar 1 token SCAN, não SCAN + ARTICLE
+        tokens = tokenize("escuto o amor\n")
+        self.assertEqual(tokens[0].type, TokenType.SCAN)
+        self.assertEqual(tokens[1].type, TokenType.VARIABLE)
+
+    def test_ouço_com_artigo_emite_token_unico(self):
+        tokens = tokenize("ouço o amor\n")
+        self.assertEqual(tokens[0].type, TokenType.SCAN)
+        self.assertEqual(tokens[1].type, TokenType.VARIABLE)
+
     def test_continue_avance(self):
         self.assertEqual(self._tipo("avance\n"), TokenType.CONTINUE)
 

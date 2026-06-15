@@ -2,7 +2,7 @@ from verso.semantica.constants import SemanticError
 from verso.ast import (
     Program, Statement, Expression,
     VariableDeclaration, Attribution, WhileLoop, IfBody,
-    PrintStatement, BreakStatement, ContinueStatement, ReturnStatement,
+    PrintStatement, ScanStatement, BreakStatement, ContinueStatement, ReturnStatement,
     BinaryOperation, MonadicOperation, Literal,
 )
 from verso.token.constants import PrimitiveType, TokenType, Token
@@ -75,6 +75,8 @@ class SemanticAnalyzer:
                 return self._visit_if(node)
             case PrintStatement():
                 return self._visit_print(node)
+            case ScanStatement():
+                return self._visit_scan(node)
             case BreakStatement() | ContinueStatement():
                 return []
             case ReturnStatement():
@@ -212,6 +214,15 @@ class SemanticAnalyzer:
 
     def _visit_print(self, node: PrintStatement) -> list[SemanticError]:
         return []
+
+    def _visit_scan(self, node: ScanStatement) -> list[SemanticError]:
+        if not isinstance(node.args, Literal) or not isinstance(node.args.value, list):
+            return []
+        errors = []
+        for nome in node.args.value:
+            if isinstance(nome, str) and not self._is_declared(nome) and not self._is_numeric_literal(nome):
+                errors.append(SemanticError(f"'{nome}' não foi declarada."))
+        return errors
 
     def _visit_return(self, node: ReturnStatement) -> list[SemanticError]:
         return []

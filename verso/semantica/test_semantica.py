@@ -381,5 +381,33 @@ class TestTabelaDeSimbolos(unittest.TestCase):
         self.assertIsNone(erros)
 
 
+class TestScanSemantica(unittest.TestCase):
+
+    def test_scan_variavel_declarada_sem_erros(self):
+        _, erros = _analisar("amor é verso.\nescuto amor.\n")
+        self.assertIsNone(erros)
+
+    def test_scan_alias_escute_sem_erros(self):
+        _, erros = _analisar("amor é verso.\nescute amor.\n")
+        self.assertIsNone(erros)
+
+    def test_scan_alias_ouço_sem_erros(self):
+        _, erros = _analisar("amor é verso.\nouço amor.\n")
+        self.assertIsNone(erros)
+
+    def test_scan_alias_ouça_sem_erros(self):
+        _, erros = _analisar("amor é verso.\nouça amor.\n")
+        self.assertIsNone(erros)
+
+    def test_scan_com_artigo_sem_erros(self):
+        _, erros = _analisar("amor é verso.\nescuto o amor.\n")
+        self.assertIsNone(erros)
+
+    def test_scan_variavel_nao_declarada_gera_erro(self):
+        _, erros = _analisar("escuto amor.\n")
+        self.assertIsNotNone(erros)
+        self.assertTrue(any("'amor' não foi declarada" in e.description for e in erros))
+
+
 if __name__ == '__main__':
     unittest.main()
