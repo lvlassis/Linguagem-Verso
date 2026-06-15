@@ -6,15 +6,17 @@ from verso.semantica.semantica import SemanticAnalyzer
 from verso.codigo.gerador import GeradorCodigo
 
 
+def _extrair_corpo(full: str) -> str:
+    start = full.index('int main() {\n') + len('int main() {\n')
+    end = full.rindex('\n    return 0;\n}')
+    body = full[start:end]
+    return '\n'.join(line[4:] if line.startswith('    ') else line for line in body.split('\n'))
+
+
 def _compilar(fonte: str) -> str:
     tokens = tokenize(fonte)
     programa = Parser(tokens).parse_program()
-    full = GeradorCodigo().gerar(programa)
-    # extrai o corpo entre "int main() {" e "return 0;" e desfaz o recuo de 4 espaços
-    start = full.index('int main() {\n') + len('int main() {\n')
-    end = full.rindex('\nreturn 0;\n}')
-    body = full[start:end]
-    return '\n'.join(line[4:] if line.startswith('    ') else line for line in body.split('\n'))
+    return _extrair_corpo(GeradorCodigo().gerar(programa))
 
 
 def _compilar_full(fonte: str) -> str:
@@ -22,11 +24,7 @@ def _compilar_full(fonte: str) -> str:
     tokens = tokenize(fonte)
     programa = Parser(tokens).parse_program()
     programa, _ = SemanticAnalyzer().analyse(programa)
-    full = GeradorCodigo().gerar(programa)
-    start = full.index('int main() {\n') + len('int main() {\n')
-    end = full.rindex('\nreturn 0;\n}')
-    body = full[start:end]
-    return '\n'.join(line[4:] if line.startswith('    ') else line for line in body.split('\n'))
+    return _extrair_corpo(GeradorCodigo().gerar(programa))
 
 
 class TestDeclaracaoVariavel(unittest.TestCase):
