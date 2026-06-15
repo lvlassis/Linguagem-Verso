@@ -18,6 +18,17 @@ TYPE_TOKEN_LIST = [
     TokenType.DATA_STRUCT
 ]
 
+FILLING_TOKENS_LIST = [
+    TokenType.ARTICLE,
+    TokenType.PREPOSITION,
+    TokenType.CONJUNCTION
+]
+
+BOOLEAN_TOKENS_LIST = [
+    TokenType.BOOLEAN_FALSE,
+    TokenType.BOOLEAN_TRUE
+]
+
 class ASTNode:
     pass
 class Statement(ASTNode):
@@ -73,6 +84,10 @@ class IfBody(Statement):
 @dataclass
 class PrintStatement(Statement):
     args: list
+
+@dataclass
+class ScanStatement(Statement):
+    args: Variable
 
 @dataclass
 class BreakStatement(Statement):

@@ -49,6 +49,9 @@ class TokenType(Enum):
 
     # Saída
     PRINT = 'PRINT'
+
+    # Entrada
+    SCAN = 'SCAN'
     
     # Operações
     SUM = 'SUM'
@@ -155,7 +158,10 @@ PALAVRAS_RESERVADAS: dict[str, Token] = {
     "que": Token(TokenType.CONJUNCTION),
 
     # As chaves são padrões regex — expressões multi-palavra funcionam naturalmente
-    r"digo\s+que": Token(TokenType.PRINT),
-    "grito":       Token(TokenType.PRINT),
-    "gritarei":    Token(TokenType.PRINT),
+    r"dig[ao](\s+que)?": Token(TokenType.PRINT),
+    r"grit[eo](\s+que)?":       Token(TokenType.PRINT),
+    r"gritarei(\s+que)?":    Token(TokenType.PRINT),
+
+    r"ouç[ao](\s+(que|a|o))?": Token(TokenType.SCAN),
+    r"escut[eo](\s+(o que|o|a))?":       Token(TokenType.SCAN)
 }

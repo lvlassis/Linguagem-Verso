@@ -5,7 +5,7 @@ from verso.ast import (
     PrintStatement, BreakStatement, ContinueStatement, ReturnStatement,
     BinaryOperation, MonadicOperation, Literal,
 )
-from verso.token.constants import PrimitiveType, TokenType
+from verso.token.constants import PrimitiveType, TokenType, Token
 
 _OPERADORES_COMPARACAO = frozenset({
     TokenType.EQUAL, TokenType.DIFFERENT,
@@ -65,6 +65,7 @@ class SemanticAnalyzer:
     def _visit(self, node: Statement) -> list[SemanticError]:
         match node:
             case VariableDeclaration():
+                print(node)
                 return self._visit_declaration(node)
             case Attribution():
                 return self._visit_attribution(node)
@@ -101,7 +102,7 @@ class SemanticAnalyzer:
             return [SemanticError(f"'{node.name}' não foi declarada.")]
 
         declared_type = self._lookup(node.name)
-        palavras = [v for v in node.value if isinstance(v, str)]
+        palavras = [v for v in node.value.value if isinstance(v, str)]
         expressoes = [p for p in palavras if not self._is_declared(p) and not self._is_numeric_literal(p)]
 
         if expressoes:
@@ -115,7 +116,7 @@ class SemanticAnalyzer:
         return self._validar_valor(node.name, declared_type, node.value)
 
     def _validar_valor(self, varname: str, declared_type: PrimitiveType, value: list) -> list[SemanticError]:
-        palavras = [v for v in value if isinstance(v, str)]
+        palavras = [v for v in value.value if isinstance(v, str)]
         variaveis  = [p for p in palavras if self._is_declared(p)]
         expressoes = [p for p in palavras if not self._is_declared(p) and not self._is_numeric_literal(p)]
 
@@ -148,8 +149,8 @@ class SemanticAnalyzer:
 
     def _visit_while(self, node: WhileLoop) -> list[SemanticError]:
         errors = []
-        for token in node.condition:
-            if token.type == TokenType.VARIABLE and not self._is_declared(token.value):
+        for token in node.condition.value:
+            if isinstance(token, Token) and token.type == TokenType.VARIABLE and not self._is_declared(token.value):
                 errors.append(SemanticError(f"'{token.value}' não foi declarada."))
 
         self._push_scope()
@@ -218,16 +219,16 @@ class SemanticAnalyzer:
 
     # --- expression evaluators ---
 
-    def _avaliar_expressao_int(self, values: list) -> int:
-        palavras = [v for v in values if isinstance(v, str)]
+    def _avaliar_expressao_int(self, values: Literal) -> int:
+        palavras = [v for v in values.value if isinstance(v, str)]
 
         if len(palavras) == 1 and palavras[0].lstrip('-').isdigit():
             return int(palavras[0])
 
         return int(''.join(str(len(p)) for p in palavras))
 
-    def _avaliar_expressao_float(self, values: list) -> float:
-        palavras = [v for v in values if isinstance(v, str)]
+    def _avaliar_expressao_float(self, values: Literal) -> float:
+        palavras = [v for v in values.value if isinstance(v, str)]
 
         if len(palavras) == 1:
             try:

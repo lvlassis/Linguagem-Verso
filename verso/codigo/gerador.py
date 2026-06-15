@@ -86,7 +86,7 @@ class GeradorCodigo:
         return f'{c_type} {node.name};'
 
     def _gerar_atribuicao(self, node: Attribution) -> str:
-        return f'{node.name} = {" ".join(str(v) for v in node.value)};'
+        return f'{node.name} = {" ".join(str(v) for v in node.value.value)};'
 
     def _gerar_if(self, node: IfBody) -> str:
         cond = self._gerar_expressao(node.condition)
@@ -119,7 +119,7 @@ class GeradorCodigo:
         return f'while ({cond}) {{\n{corpo}\n}}'
 
     def _gerar_print(self, node: PrintStatement) -> str:
-        args = [str(v) for v in node.args if v is not None]
+        args = [str(v) for v in node.args.value if v is not None]
         return f'printf("{" ".join(args)}\\n");'
 
     def _gerar_return(self, node: ReturnStatement) -> str:
@@ -130,11 +130,13 @@ class GeradorCodigo:
 
     def _gerar_condicao(self, tokens: list[Token]) -> str:
         parts = []
-        for t in tokens:
-            if t.type in _C_COMPARISONS:
+        for t in tokens.value:
+            if isinstance(t, Token) and t.type in _C_COMPARISONS:
                 parts.append(_C_COMPARISONS[t.type])
-            elif t.type in _C_BOOLEANS:
+            elif isinstance(t, Token) and t.type in _C_BOOLEANS:
                 parts.append(_C_BOOLEANS[t.type])
-            elif t.value is not None:
+            elif isinstance(t, Token) and t.value is not None:
                 parts.append(str(t.value))
+            elif t is not None:
+                parts.append(str(t))
         return ' '.join(parts)
