@@ -29,19 +29,19 @@ class Program(ASTNode):
     instructions: list[Statement]
 
 @dataclass
+class Literal(Expression):
+    value: str | int | float | list
+
+@dataclass
 class VariableDeclaration(Statement):
     name: str
     varType: str
-    value: list[str]
+    value: Expression
 
 @dataclass
 class Atribuition(Statement):
     name: str
-    value: list[str]
-
-@dataclass
-class Literal(Expression):
-    value: str
+    value: Expression
 
 @dataclass
 class Variable(Expression):
