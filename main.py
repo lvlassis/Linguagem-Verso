@@ -1,3 +1,4 @@
+import argparse
 import sys
 from pathlib import Path
 
@@ -21,11 +22,25 @@ def compilar(fonte: str) -> str:
 
 
 def main() -> None:
-    if len(sys.argv) < 2:
-        print("Uso: python main.py <arquivo.vs>", file=sys.stderr)
-        sys.exit(1)
+    parser = argparse.ArgumentParser(
+        prog="verso",
+        description="Compilador da linguagem Romântica → C",
+    )
+    parser.add_argument("arquivo", help="arquivo fonte .vs")
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument(
+        "--preview",
+        action="store_true",
+        help="exibe o código C gerado sem criar arquivo",
+    )
+    group.add_argument(
+        "--build",
+        action="store_true",
+        help="compila e salva o arquivo C em bin/ (padrão)",
+    )
+    args = parser.parse_args()
 
-    caminho = Path(sys.argv[1])
+    caminho = Path(args.arquivo)
     if not caminho.exists():
         print(f"[verso] erro: '{caminho}' não encontrado.", file=sys.stderr)
         sys.exit(1)
@@ -33,6 +48,10 @@ def main() -> None:
     codigo = compilar(caminho.read_text(encoding='utf-8'))
     if not codigo:
         sys.exit(1)
+
+    if args.preview:
+        print(codigo)
+        return
 
     saida = caminho.parent.parent / "bin" / caminho.with_suffix('.c').name
     saida.write_text(codigo, encoding='utf-8')
