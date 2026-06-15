@@ -100,3 +100,15 @@ class ContinueStatement(Statement):
 @dataclass
 class ReturnStatement(Statement):
     value: list
+
+@dataclass
+class FunctionDefinition(Statement):
+    name: str
+    args: list[VariableDeclaration] | None
+    instructions: list[Statement]
+    funcReturn: ReturnStatement
+
+@dataclass
+class FunctionCall(Expression):
+    name: str
+    args: list[Variable]

@@ -1,7 +1,7 @@
 from verso.token.constants import Token, TokenType
 from verso.sintaxe.constants import (
     SKIP_LIST, EOI_TOKEN_LIST, TYPE_TOKEN_LIST, FILLING_TOKENS_LIST, BOOLEAN_TOKENS_LIST,
-    Statement, Expression, Program,
+    Statement, Expression, Program, FunctionDefinition, FunctionCall,
     VariableDeclaration, Attribution, Variable, Literal,
     WhileLoop, BinaryOperation, MonadicOperation, IfBody, ScanStatement,
     PrintStatement, BreakStatement, ContinueStatement, ReturnStatement,
@@ -56,9 +56,7 @@ class Parser:
     def go_to_SNI(self) -> tuple[list[Token], Token | None] | None:
         """Consome todos os tokens até chegar ao início da próxima instrução."""
         tokens = []
-        while True:
-            if self.pos >= len(self.tokens):
-                break
+        while self.pos < len(self.tokens):
             if self.tokens[self.pos].type not in EOI_TOKEN_LIST:
                 return tokens, self.get_current_token()
             else:
@@ -108,10 +106,19 @@ class Parser:
             case TokenType.RETURN:
                 return self.parse_return()
             case TokenType.VARIABLE:
+                tokens_list = [TokenType.DECL_ATTR, TokenType.FUNC_CALL, TokenType.FUNC_DEFINITION]
+
                 next_token = self.get_next_token()
-                if next_token.type != TokenType.DECL_ATTR:
-                    raise SyntaxError(f"Erro sintático: expressão esperada {TokenType.DECL_ATTR}")
-                return self.parse_decl_attr()
+                if next_token.type not in tokens_list:
+                    raise SyntaxError(f"Erro sintático: expressão esperada {tokens_list}")
+                
+                if next_token.type == TokenType.DECL_ATTR:
+                    return self.parse_decl_attr()
+                elif next_token.type == TokenType.FUNC_CALL:
+                    return self.parse_func_call()
+                elif next_token.type == TokenType.FUNC_DEFINITION:
+                    return self.parse_func_definition()
+
             case TokenType.EOL:
                 while self.get_current_token() and self.get_current_token().type == TokenType.EOL:
                     self.consume_token()
@@ -122,6 +129,75 @@ class Parser:
 
 
         return None
+    # --- functions ---
+    def parse_func_definition(self) -> Statement:
+        func_name_token = self.consume_token()
+        self.consume_token([TokenType.FUNC_DEFINITION])  # consome token de definição de função
+        next_token = self.get_current_token()
+
+        if next_token is None:
+            raise SyntaxError("Formato de função não aceito")
+        
+        # Get function's args
+        args = []
+        if next_token.type != TokenType.NONE:
+            while self.get_current_token().type != TokenType.DOT:
+                self.go_to_SNI()
+                self.go_to_next_relevant_token()
+                next_token = self.get_next_token()
+                if next_token.type != TokenType.DECL_ATTR:
+                    raise SyntaxError(f"Erro sintático: expressão esperada {TokenType.DECL_ATTR}")
+                arg = self.parse_decl_attr()
+                if arg is not None:
+                    args.append(arg)
+
+        # Get instructions
+        instructions = []
+        return_statement = None
+        while self.get_current_token():
+            instruction = self.parse_instructions()
+            if instruction is not None:
+                if isinstance(instruction, ReturnStatement):
+                    return_statement = instruction
+                    break
+                instructions.append(instruction)
+
+        if return_statement is None:
+            raise SyntaxError("Formato de função não aceito. É necessário adicionar um retorno.")
+
+        return FunctionDefinition(
+            name=func_name_token.value,
+            args=args,
+            instructions=instructions,
+            funcReturn=return_statement
+        )
+
+    def parse_func_call(self) -> Statement:
+        func_name_token = self.consume_token()
+        self.consume_token([TokenType.FUNC_CALL])  # consome token de definição de função
+        next_token = self.get_current_token()
+
+        if next_token is None:
+            raise SyntaxError("Chamada de instrução com formato não aceito.")
+        
+        # Get function's args
+        args = []
+        while self.get_current_token() and self.get_current_token().type != TokenType.DOT:
+            self.go_to_SNI()
+            print('Enter:', self.get_current_token())
+            expression = self.parse_expression(ignore_complements=False)
+            print("Expression: ", expression, self.get_current_token())
+            if expression is not None:
+                args.append(expression)
+
+        if self.get_current_token().type != TokenType.DOT:
+            raise SyntaxError("Chamada de instrução com formato não aceito.")
+        
+        return FunctionCall(
+            name=func_name_token.value,
+            args=args
+        )
+
 
     # --- control flow ---
 
@@ -270,7 +346,6 @@ class Parser:
             value_tokens, eoi = tokens_eoi
             value = [t.value for t in value_tokens if t.type not in SKIP_LIST]
             self._last_eoi = eoi.type
-            self.consume_token([eoi.type])
             return VariableDeclaration(
                 name=first_token.value,
                 varType=varType.value,
@@ -283,7 +358,6 @@ class Parser:
             value_tokens, eoi = tokens_eoi
             value = [t.value for t in value_tokens if t.type not in SKIP_LIST]
             self._last_eoi = eoi.type
-            self.consume_token([eoi.type])
             return Attribution(
                 name=first_token.value,
                 value=value

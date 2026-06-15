@@ -60,6 +60,11 @@ class TokenType(Enum):
     DIV = 'DIV'
     REST = 'REST'
 
+    # Definição de função
+    FUNC_DEFINITION = 'FUNC_DEFINITION'
+    FUNC_CALL = 'FUNC_CALL'
+    NONE = 'NONE'
+
 
 class PrimitiveType(Enum):
     INTEGER = 'INTEGER'
@@ -146,6 +151,10 @@ PALAVRAS_RESERVADAS: dict[str, Token] = {
     "entregue": Token(TokenType.RETURN),
     "retorne":  Token(TokenType.RETURN),
     "volte":    Token(TokenType.RETURN),
+
+    r'exige[s]?(\s+que)?':       Token(TokenType.FUNC_DEFINITION),
+    r'consome[s]?':     Token(TokenType.FUNC_CALL),
+    'nada':             Token(TokenType.NONE),
 
     "a":   Token(TokenType.ARTICLE),
     "o":   Token(TokenType.ARTICLE),
