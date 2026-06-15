@@ -55,7 +55,7 @@ class GeradorCodigo:
             '\n'
             'int main() {\n'
             f'{body}\n'
-            'return 0;\n'
+            '    return 0;\n'
             '}'
         )
 
