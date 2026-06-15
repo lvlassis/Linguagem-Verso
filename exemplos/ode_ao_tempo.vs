@@ -13,7 +13,7 @@ chama é dilema.
 chama é verdadeiro.
 
 # ── Condicional ──────────────────────────────────────────
-se ano maior 3 então
+se ano maior que 3 então
 digo que o tempo acelera.
 senão digo que o tempo repousa.
 
