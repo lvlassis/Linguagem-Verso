@@ -6,77 +6,100 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Verso** is a compiler/transpiler for **Romântica** ("Linguagem Poética"), a programming language where programs look like Portuguese Romantic-era poetry. The compiler targets C code output. Final project for a Formal Languages (Linguagens Formais) course at UFG.
 
-Full language spec: `docs/Linguagem Poética.md`. Syntax examples: `docs/rascunho_objetivo_2.md`.
+Full language spec: `docs/Linguagem Poética.md`. Syntax examples: `docs/rascunho_objetivo_2.md`. Implementation checklist: `docs/checklist.md`.
 
-## Running
+## Commands
 
 ```bash
+# Run the scratch pipeline (tokenize → parse → semantic → codegen)
 python main.py
-```
 
-`main.py` is currently a scratch test file that calls `tokenize()` on a hardcoded string and prints the result.
+# Run lexer tests
+python -m unittest verso/token/test_tokenization.py
+
+# Run all tests
+python -m unittest discover
+```
 
 ## Architecture
 
-All compiler logic lives in `verso/tokens.py`. The only implemented stage is lexical analysis (`tokenize()`).
+The compiler is a four-stage pipeline. Each stage lives in its own subpackage under `verso/`:
 
-### Tokenization pipeline
+```
+verso/token/      — Lexical analysis
+verso/sintaxe/    — Syntax analysis (AST)
+verso/semantica/  — Semantic analysis (stub)
+verso/codigo/     — C code generation (stub)
+```
 
-`tokenize(program: str) -> list[Token]` uses a single-pass regex tokenizer:
+`main.py` is a scratch driver that wires all stages together for manual testing.
 
-1. A master regex matches token kinds in priority order: `COMMENT`, `IDENTIFIER`, `NUMBER`, `ELLIPSE`, `DOT`, `WHITESPACE`, `MISMATCH`, `EOL`.
-2. `WHITESPACE` and `COMMENT` tokens are discarded.
-3. `IDENTIFIER` tokens are looked up in `verso/palavras_reservadas.json`; if found, the JSON value becomes the token kind; otherwise the word is classified as `VARIABLE`.
-4. The result is a flat `list[Token]`.
+### Stage 1 — Lexical analysis (`verso/token/`)
 
-### Reserved words
+`tokenize(program: str) -> list[Token]` in `tokenizer.py`:
 
-`verso/palavras_reservadas.json` is the single source of truth for keyword-to-`TokenType` mapping. To add a new keyword, add it here — no code changes needed unless the `TokenType` member itself is new.
+1. Builds a master regex from `PALAVRAS_RESERVADAS` keys (which are regex patterns, not plain strings — e.g. `r"digo\s+que"` matches multi-word keywords as a single token).
+2. Priority order: `COMMENT`, `RESERVED`, `IDENTIFIER`, `NUMBER`, `ELLIPSE`, `DOT`, `WHITESPACE`, `MISMATCH`, `EOL`.
+3. `WHITESPACE` and `COMMENT` tokens are discarded; `MISMATCH` raises `RuntimeError`.
+4. Input is lowercased before matching, so tokenization is case-insensitive.
 
-> **Known bugs in `palavras_reservadas.json`:** Several entries use `PRIMITIVA_TYPE` (not `PRIMITIVE_TYPE`) and `DIFERENT` (not `DIFFERENT`), and the `"me "` key has a trailing space. These will cause `KeyError` at runtime for those tokens.
+`PALAVRAS_RESERVADAS` in `constants.py` is the single source of truth for keyword → `Token` mapping. Each value is a `Token(type, value?)` where `value` is a `PrimitiveType` enum member for type keywords, or `None` otherwise. To add a keyword, add an entry here; add a new `TokenType` member only if introducing a new syntactic category.
+
+### Stage 2 — Syntax analysis (`verso/sintaxe/`)
+
+`Parser` in `parser.py` consumes a `list[Token]` and produces `list[Statement]` (an AST).
+
+Key parser concepts:
+- `SKIP_LIST` = `[ARTICLE, PREPOSITION, CONJUNCTION]` — grammar filler tokens skipped during parsing.
+- `EOI_TOKEN_LIST` = `[EOL, DOT]` — end-of-instruction sentinels (`.` closes blocks too).
+- `DECL_TOKEN_LIST` = `[PRIMITIVE_TYPE, DATA_STRUCT]` — triggers variable declaration path.
+
+Currently handles: variable declarations (`var é tipo`) and assignments (`var é valor`). `IF`/`WHILE`/`FOR` branches are stubs.
+
+AST node dataclasses live in `constants.py`: `VariableDeclaration`, `Attribution`, `Literal`, `Variable` (all extend `Statement` or `Expression`).
+
+### Stages 3 & 4 — Semantic analysis and code generation
+
+Both are stubs. `SemanticAnalyzer.analyse()` returns `(tree, None)` unchanged. `GeradorCodigo.gerar_codigo()` returns an empty string.
 
 ## Token types
 
-**`TokenType`** — add new members here when introducing new syntax:
+`TokenType` members:
 
 | Member | Meaning |
 |---|---|
-| `VARIABLE` | Identifier not found in reserved words |
-| `DOT` | `.` — statement/block terminator |
+| `VARIABLE` | Identifier not in reserved words |
+| `DOT` | `.` — statement/block terminator (also closes `if`/`while` blocks) |
 | `ELLIPSE` | `...` — used in float value phrases |
-| `NUMBER` | Integer or float literal (`\d+(\.\d+)?`) |
-| `DECL_ATTR` | `é`, `és`, `seja` — assignment/declaration keyword |
-| `PRIMITIVE_TYPE` | Type keyword (`rocha`, `bruma`) |
-| `DATA_STRUCT` | Array/collection keyword (`coro`, `compêndio`) |
-| `IF` / `ELSE` / `WHILE` / `FOR` | Control flow |
+| `NUMBER` | Integer or float literal |
+| `DECL_ATTR` | `é`, `és`, `seja`, `guarda/e`, `encerra/e` — assignment/declaration |
+| `PRIMITIVE_TYPE` | Type keyword; `Token.value` holds the `PrimitiveType` enum member |
+| `DATA_STRUCT` | Array keyword (`coro`, `compêndio`) |
+| `IF` / `THEN` / `ELSE` / `WHILE` / `FOR` | Control flow |
 | `EQUAL` / `DIFFERENT` / `GREATER_THAN` / `LESS_THAN` / `GREATER_OR_EQUAL` / `LESS_OR_EQUAL` | Comparison operators |
 | `AND` / `OR` / `NOT` | Logical operators |
 | `BOOLEAN_TRUE` / `BOOLEAN_FALSE` | Boolean literals |
 | `ARTICLE` | `a`, `o`, `um`, `uma` — grammar filler |
 | `PREPOSITION` | `de`, `da` — grammar filler |
 | `CONJUNCTION` | `que` — grammar filler |
+| `CONTINUE` / `BREAK` / `RETURN` | Jump statements |
+| `PRINT` | `grito`, `gritarei`, `digo que` |
 | `EOL` | End of line sentinel |
-
-> **Note:** `STRUCT` and `DATA_STRUCT` are both defined in the enum with the same value `'DATA_STRUCT'` — this is a duplicate.
 
 ## Language Semantics
 
 **Types** (keyword → C type):
-- `Rocha` → `int`
-- `Bruma`, `Névoa`, `Cinza` → `float`
-- `Traço`, `Suspiro` → `char`
-- `Verso`, `Canção`, `Prosa` → `char[]`
-- `Dilema`, `Dualidade` → `bool`
+- `rocha` → `int`
+- `bruma`, `névoa`, `cinza` → `float`
+- `traço`, `suspiro` → `char`
+- `verso`, `canção`, `prosa` → `char[]`
+- `dilema`, `dualidade` → `bool`
 
 **Declaration patterns:**
-- `<var> é <type>.` → `type var;`
-- `Que <var> seja <type>.` → `type var;`
-- `Que <var> seja <type> <adjective>.` → `type var = value;`
+- `<var> é <tipo>.` → `tipo var;`
+- `Que <var> seja <tipo>.` → `tipo var;`
+- `Que <var> seja <tipo> <adjunto>.` → `tipo var = valor;`
 
-**Assignment aliases for `é`:** `és`, `guarda`, `encerra`, `seja`, `guarde`, `encerre`
+**Control flow:** `se … então` → `if` | `senão` / `porém` → `else` | `enquanto` → `while` | `sendo` → `for` | `.` → `}`
 
-**Control flow:** `se … então` → `if` | `porém, se|caso` → `else if` | `senão` → `else` | `enquanto` → `while` | `para` → `for` | `.` → `}`
-
-**Output:** `gritarei` / `digo que` → `print`
-
-**Arrays:** `Coro`, `Compêndio` — element type indicated by adjective (e.g. `rochoso` for int)
+**Output:** `grito` / `gritarei` / `digo que` → `print`
