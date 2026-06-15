@@ -46,3 +46,14 @@ class Literal(Expression):
 @dataclass
 class Variable(Expression):
     name: str
+
+@dataclass
+class BinaryOperation(Expression):
+    firstOperator: Expression
+    operation: str
+    SecondOperator: Expression
+
+@dataclass
+class MonadicOperation(Expression):
+    operator: Expression
+    operation: str
