@@ -65,7 +65,6 @@ class SemanticAnalyzer:
     def _visit(self, node: Statement) -> list[SemanticError]:
         match node:
             case VariableDeclaration():
-                print(node)
                 return self._visit_declaration(node)
             case Attribution():
                 return self._visit_attribution(node)
