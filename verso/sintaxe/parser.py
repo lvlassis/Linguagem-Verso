@@ -200,7 +200,7 @@ class Parser:
     def parse_expression(self) -> Expression:
         _, token = self.go_to_next_relevant_token()
         if token.type == TokenType.VARIABLE:
-            left_node = self.parse_factor()
+            left_node = self.parse_term()
 
             OPERATIONS = [
                 TokenType.SUM, TokenType.SUB,
@@ -210,7 +210,7 @@ class Parser:
             ]
             while self.get_current_token() and self.get_current_token().type in OPERATIONS:
                 operator = self.consume_token(OPERATIONS)
-                right_node = self.parse_factor()
+                right_node = self.parse_term()
                 left_node = BinaryOperation(
                     firstOperand=left_node,
                     operator=operator,
