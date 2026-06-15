@@ -107,14 +107,12 @@
 
 | Estrutura     | Romântica                   | Léxico | Sintaxe | Semântica | Codegen |
 |---------------|-----------------------------|:------:|:-------:|:---------:|:-------:|
-| `if`          | `se … então`                | ✅ | ✅ | 🔶 | ✅ |
-| `else`        | `senão`, `porém`            | ✅ | ✅ | 🔶 | ✅ |
+| `if`          | `se … então`                | ✅ | ✅ | ✅ | ✅ |
+| `else`        | `senão`, `porém`            | ✅ | ✅ | ✅ | ✅ |
 | `else if`     | `porém, se` / `porém, caso` | ❌ | ❌ | ❌ | ❌ |
 | `while`       | `enquanto`                  | ✅ | ✅ | ✅ | ✅ |
 | `for`         | `sendo`                     | ✅ | ❌ | ❌ | ❌ |
 | fechamento    | `.` (ponto final)           | ✅ | ✅ | — | — |
-
-> `if`/`else` marcados como 🔶 em Semântica: corpo é visitado com escopo próprio, mas a condição não é verificada semanticamente (variáveis/tipos na condição não são validados).
 
 > `for` não tem sintaxe definida na spec além da keyword `sendo`.
 
@@ -158,9 +156,9 @@
 | Compatibilidade de tipos (atribuição)           | ✅ |
 | Escopo de bloco (`while`)                       | ✅ |
 | Escopo de bloco (`if`/`else`)                   | ✅ |
-| Verificação de variáveis/tipos na condição      | ❌ |
+| Verificação de variáveis/tipos na condição      | ✅ |
 | Escopo de bloco (`for`)                         | ❌ |
-| Inferência de tipo de expressões                | ❌ |
+| Inferência de tipo de expressões                | ✅ |
 
 ---
 

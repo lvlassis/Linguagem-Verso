@@ -193,6 +193,99 @@ class TestBreakContinueReturnSemantica(unittest.TestCase):
         self.assertIsNone(erros)
 
 
+class TestCondicaoSemantica(unittest.TestCase):
+
+    # --- while ---
+
+    def test_while_variavel_nao_declarada_na_condicao(self):
+        _, erros = _analisar("enquanto amor igual 0\ngrito paz.\n")
+        self.assertIsNotNone(erros)
+        self.assertTrue(any("'amor' não foi declarada" in e.description for e in erros))
+
+    def test_while_variavel_declarada_na_condicao(self):
+        _, erros = _analisar("amor é rocha.\nenquanto amor igual 0\ngrito paz.\n")
+        self.assertIsNone(erros)
+
+    def test_while_duas_variaveis_uma_nao_declarada(self):
+        _, erros = _analisar("amor é rocha.\nenquanto amor igual paz\ngrito amor.\n")
+        self.assertIsNotNone(erros)
+        self.assertTrue(any("'paz' não foi declarada" in e.description for e in erros))
+
+    # --- if: variáveis não declaradas ---
+
+    def test_if_ambas_variaveis_nao_declaradas(self):
+        _, erros = _analisar("se amor igual paz então\ngrito amor.\n")
+        self.assertIsNotNone(erros)
+        self.assertTrue(any("'amor' não foi declarada" in e.description for e in erros))
+
+    def test_if_uma_variavel_nao_declarada(self):
+        _, erros = _analisar("amor é rocha.\nse amor igual paz então\ngrito amor.\n")
+        self.assertIsNotNone(erros)
+        self.assertTrue(any("'paz' não foi declarada" in e.description for e in erros))
+
+    def test_if_variaveis_declaradas_sem_erro(self):
+        _, erros = _analisar("amor é rocha.\npaz é rocha.\nse amor igual paz então\ngrito amor.\n")
+        self.assertIsNone(erros)
+
+    def test_if_not_com_variaveis_declaradas(self):
+        _, erros = _analisar("amor é rocha.\npaz é rocha.\nse não amor igual paz então\ngrito amor.\n")
+        self.assertIsNone(erros)
+
+    def test_if_not_com_variavel_nao_declarada(self):
+        _, erros = _analisar("amor é rocha.\nse não amor igual paz então\ngrito amor.\n")
+        self.assertIsNotNone(erros)
+        self.assertTrue(any("'paz' não foi declarada" in e.description for e in erros))
+
+    # --- inferência de tipo em expressões aritméticas ---
+
+    def test_expressao_int_mais_int_valida(self):
+        _, erros = _analisar(
+            "amor é rocha.\npaz é rocha.\n"
+            "se amor acresce paz igual 0 então\ngrito amor.\n"
+        )
+        self.assertIsNone(erros)
+
+    def test_expressao_int_mais_float_valida(self):
+        _, erros = _analisar(
+            "amor é rocha.\npaz é bruma.\n"
+            "se amor acresce paz igual 0 então\ngrito amor.\n"
+        )
+        self.assertIsNone(erros)
+
+    def test_expressao_aritmetica_com_string_invalida(self):
+        _, erros = _analisar(
+            "amor é verso.\npaz é rocha.\n"
+            "se amor acresce paz igual 0 então\ngrito amor.\n"
+        )
+        self.assertIsNotNone(erros)
+        self.assertTrue(any("aritmética" in e.description for e in erros))
+
+    def test_expressao_aritmetica_com_bool_invalida(self):
+        _, erros = _analisar(
+            "amor é dilema.\npaz é rocha.\n"
+            "se amor acresce paz igual 0 então\ngrito amor.\n"
+        )
+        self.assertIsNotNone(erros)
+        self.assertTrue(any("aritmética" in e.description for e in erros))
+
+    # --- comparação entre tipos incompatíveis ---
+
+    def test_comparacao_int_com_string_invalida(self):
+        _, erros = _analisar(
+            "amor é rocha.\npaz é verso.\n"
+            "se amor igual paz então\ngrito amor.\n"
+        )
+        self.assertIsNotNone(erros)
+        self.assertTrue(any("Comparação inválida" in e.description for e in erros))
+
+    def test_comparacao_int_com_float_valida(self):
+        _, erros = _analisar(
+            "amor é rocha.\npaz é bruma.\n"
+            "se amor igual paz então\ngrito amor.\n"
+        )
+        self.assertIsNone(erros)
+
+
 class TestValidacaoTiposNaoNumericos(unittest.TestCase):
 
     # --- char ---
