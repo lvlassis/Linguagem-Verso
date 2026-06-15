@@ -43,8 +43,21 @@ _C_BOOLEANS: dict[TokenType, str] = {
 
 
 class GeradorCodigo:
+    @staticmethod
+    def _indent(code: str) -> str:
+        return '\n'.join('    ' + line for line in code.split('\n'))
+
     def gerar(self, program: Program) -> str:
-        return '\n'.join(self._visitar(s) for s in program.instructions)
+        body = '\n'.join(self._indent(self._visitar(s)) for s in program.instructions)
+        return (
+            '#include <stdio.h>\n'
+            '#include <stdbool.h>\n'
+            '\n'
+            'int main() {\n'
+            f'{body}\n'
+            'return 0;\n'
+            '}'
+        )
 
     def _visitar(self, node: Statement) -> str:
         match node:
@@ -77,10 +90,10 @@ class GeradorCodigo:
 
     def _gerar_if(self, node: IfBody) -> str:
         cond = self._gerar_expressao(node.condition)
-        corpo = '\n'.join(f'    {self._visitar(s)}' for s in node.positive_instructions)
+        corpo = '\n'.join(self._indent(self._visitar(s)) for s in node.positive_instructions)
         resultado = f'if ({cond}) {{\n{corpo}\n}}'
         if node.negative_instructions:
-            senao = '\n'.join(f'    {self._visitar(s)}' for s in node.negative_instructions)
+            senao = '\n'.join(self._indent(self._visitar(s)) for s in node.negative_instructions)
             resultado += f' else {{\n{senao}\n}}'
         return resultado
 
@@ -102,7 +115,7 @@ class GeradorCodigo:
 
     def _gerar_while(self, node: WhileLoop) -> str:
         cond = self._gerar_condicao(node.condition)
-        corpo = '\n'.join(f'    {self._visitar(s)}' for s in node.body)
+        corpo = '\n'.join(self._indent(self._visitar(s)) for s in node.body)
         return f'while ({cond}) {{\n{corpo}\n}}'
 
     def _gerar_print(self, node: PrintStatement) -> str:
