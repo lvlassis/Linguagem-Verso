@@ -1,6 +1,6 @@
 from verso.token.constants import Token, TokenType
 from verso.sintaxe.constants import (SKIP_LIST, EOI_TOKEN_LIST, TYPE_TOKEN_LIST, 
-                                     Statement, Expression, Program, VariableDeclaration, Atribuition, Variable, Literal,
+                                     Statement, Expression, Program, VariableDeclaration, Attribution, Variable, Literal,
                                      BinaryOperation, MonadicOperation, IfBody)
 
 
@@ -205,7 +205,7 @@ class Parser:
             value_tokens, EOI = self.go_to_EOI()
             values = [token.value for token in value_tokens]
 
-            return Atribuition(
+            return Attribution(
                 name=first_token.value,
                 value=values
             )
