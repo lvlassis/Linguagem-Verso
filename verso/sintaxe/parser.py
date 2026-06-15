@@ -1,5 +1,5 @@
 from verso.token.constants import Token, TokenType
-from verso.sintaxe.constants import SKIP_LIST, EOI_TOKEN_LIST, DECL_TOKEN_LIST, Statement, Expression, Program, VariableDeclaration, Atribuition
+from verso.sintaxe.constants import SKIP_LIST, EOI_TOKEN_LIST, TYPE_TOKEN_LIST, Statement, Expression, Program, VariableDeclaration, Atribuition
 
 
 class Parser:
@@ -82,17 +82,16 @@ class Parser:
     def parse_program(self) -> list[Statement]:
         instructions = []
         while True:
-            if self.get_current_token() is not None:
-                instruction = self.parse_instructions()
-                if instruction is not None:
-                    instructions.append(instruction)
-            else:
+            if self.get_current_token() is None:
                 break
+
+            instruction = self.parse_instructions()
+            if instruction is not None:
+                instructions.append(instruction)
         return instructions
 
     def parse_instructions(self) -> Statement | None:
-        _, token = self.go_to_next_relevant_token()
-
+        _, token = self.go_to_next_relevant_token() # Ignora artigos
 
         match token.type:
             case TokenType.IF:
@@ -113,12 +112,13 @@ class Parser:
     def parse_decl_attr(self) -> Statement:
         first_token = self.consume_token(TokenType)
         self.consume_token() # Consome token de atribuição
-        _, next_relevant_token = self.go_to_next_relevant_token()
 
-        if next_relevant_token.type in DECL_TOKEN_LIST:
+        _, next_relevant_token = self.go_to_next_relevant_token()
+        if next_relevant_token.type in TYPE_TOKEN_LIST:
             varType = self.consume_token()
             value_tokens, EOI = self.go_to_EOI()
             values = [token.value for token in value_tokens]
+
             self.consume_token([EOI.type])
 
             return VariableDeclaration(
@@ -126,14 +126,13 @@ class Parser:
                 varType=varType.value,
                 value=values
             )
-        elif next_relevant_token.type == TokenType.VARIABLE:
+        else:
             value_tokens, EOI = self.go_to_EOI()
             values = [token.value for token in value_tokens]
+
             self.consume_token([EOI.type])
 
             return Atribuition(
                 name=first_token.value,
                 value=values
             )
-        else :
-            pass

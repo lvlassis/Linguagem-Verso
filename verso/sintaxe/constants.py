@@ -12,7 +12,7 @@ EOI_TOKEN_LIST = [
             TokenType.DOT
         ]
 
-DECL_TOKEN_LIST = [
+TYPE_TOKEN_LIST = [
     TokenType.PRIMITIVE_TYPE,
     TokenType.DATA_STRUCT
 ]
