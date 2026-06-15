@@ -34,7 +34,7 @@ def main() -> None:
     if not codigo:
         sys.exit(1)
 
-    saida = caminho.with_suffix('.c')
+    saida = caminho.parent.parent / "bin" / caminho.with_suffix('.c').name
     saida.write_text(codigo, encoding='utf-8')
     print(f"[verso] compilado → {saida}")
 
