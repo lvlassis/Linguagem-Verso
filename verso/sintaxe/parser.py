@@ -110,6 +110,9 @@ class Parser:
                     self.consume_token()
             case TokenType.DOT:
                 _ = self.go_to_SNI()
+            case _:
+                raise SyntaxError(f"Erro sintático: o token {self.get_next_token()} não era esperado após {token}")
+
 
         return None
 
@@ -225,6 +228,7 @@ class Parser:
 
     def parse_term(self) -> Expression:
         left_node = self.parse_factor()
+
         OPERATIONS = [TokenType.MULT, TokenType.DIV, TokenType.REST]
         while self.get_current_token() and self.get_current_token().type in OPERATIONS:
             operator = self.consume_token(OPERATIONS)
@@ -255,31 +259,18 @@ class Parser:
         _, next_relevant_token = self.go_to_next_relevant_token()
         if next_relevant_token.type in TYPE_TOKEN_LIST:
             varType = self.consume_token()
-            tokens = self.go_to_EOI()
-            if tokens is None:
-                raise SyntaxError("Espera-se um \\n ou um . ao fim da instrução. Nenhum foi fornecido.")
-            
-            value_tokens, EOI = tokens
-            values = [token.value for token in value_tokens]
-            self._last_eoi = EOI.type
+            value = self.parse_expression()
 
             return VariableDeclaration(
                 name=first_token.value,
                 varType=varType.value,
-                value=values
+                value=value
             )
         else:
-            tokens = self.go_to_EOI()
-            if tokens is None:
-                raise SyntaxError("Espera-se um \\n ou um . ao fim da instrução. Nenhum foi fornecido.")
-            
-            value_tokens, EOI = tokens
-            values = [token.value for token in value_tokens]
-            self._last_eoi = EOI.type
-
+            value = self.parse_expression()
             return Attribution(
                 name=first_token.value,
-                value=values
+                value=value
             )
 
     # --- output and jump statements ---
