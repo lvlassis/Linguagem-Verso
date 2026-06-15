@@ -1,25 +1,33 @@
-from verso.semantica.semantica import SemanticAnalyzer
-from verso.codigo.gerador import GeradorCodigo
 from verso.token import tokenize
 from verso.sintaxe.parser import Parser
+from verso.semantica.semantica import SemanticAnalyzer
+from verso.codigo.gerador import GeradorCodigo
 
 
-programa = """Se Amor igual rosas então Amor é sutil. Senão amor é mar.# Comentário\n"""
+programa = """\
+amor é rocha 42
+paz é bruma eterna... suave
+se amor igual 42 então
+grito amor.
+senão
+grito paz.
+"""
 
-def test_tokenize(codigo):
-    tokens = tokenize(codigo)
 
-    print(tokens)
+def compilar(fonte: str) -> str:
+    tokens = tokenize(fonte)
+    arvore = Parser(tokens).parse_program()
+
+    arvore, erros = SemanticAnalyzer().analyse(arvore)
+    if erros:
+        for e in erros:
+            print(f"[erro semântico] {e.description}")
+        return ""
+
+    return GeradorCodigo().gerar(arvore)
 
 
-def test_parser(codigo):
-    tokens = tokenize(codigo)
-    parser = Parser(tokens)
-    program = parser.parse_program()
-
-    print(program.instructions)
-
-test_tokenize(programa)
-print("")
-test_parser(programa)
-
+if __name__ == "__main__":
+    resultado = compilar(programa)
+    if resultado:
+        print(resultado)
