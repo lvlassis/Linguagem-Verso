@@ -259,15 +259,26 @@ class Parser:
         _, next_relevant_token = self.go_to_next_relevant_token()
         if next_relevant_token.type in TYPE_TOKEN_LIST:
             varType = self.consume_token()
-            value = self.parse_expression()
-
+            tokens_eoi = self.go_to_EOI()
+            if tokens_eoi is None:
+                raise SyntaxError("Esperado um '\\n' ou '.' ao fim da declaração.")
+            value_tokens, eoi = tokens_eoi
+            value = [t.value for t in value_tokens if t.type not in SKIP_LIST]
+            self._last_eoi = eoi.type
+            self.consume_token([eoi.type])
             return VariableDeclaration(
                 name=first_token.value,
                 varType=varType.value,
                 value=value
             )
         else:
-            value = self.parse_expression()
+            tokens_eoi = self.go_to_EOI()
+            if tokens_eoi is None:
+                raise SyntaxError("Esperado um '\\n' ou '.' ao fim da atribuição.")
+            value_tokens, eoi = tokens_eoi
+            value = [t.value for t in value_tokens if t.type not in SKIP_LIST]
+            self._last_eoi = eoi.type
+            self.consume_token([eoi.type])
             return Attribution(
                 name=first_token.value,
                 value=value

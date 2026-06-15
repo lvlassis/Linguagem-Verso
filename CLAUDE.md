@@ -11,11 +11,13 @@ Full language spec: `docs/Linguagem Poética.md`. Syntax examples: `docs/rascunh
 ## Commands
 
 ```bash
-# Run the scratch pipeline (tokenize → parse → semantic → codegen)
-python main.py
+# Compile a .vs source file to C (output goes to bin/<name>.c)
+python main.py exemplos/ode_ao_tempo.vs
+make dev FILE=exemplos/ode_ao_tempo.vs   # equivalent via makefile
 
-# Run all tests
+# Run all tests (verbose)
 python -m unittest discover
+make test
 
 # Run a single test module
 python -m unittest verso/token/test_tokenization.py
@@ -24,6 +26,9 @@ python -m unittest verso/codigo/test_codigo.py
 
 # Run a single test case
 python -m unittest verso.semantica.test_semantica.TestValidacaoTiposNaoNumericos.test_char_atribuicao_com_variavel_incompativel
+
+# Remove compiled .c files from bin/
+make clear
 ```
 
 ## Architecture
@@ -38,7 +43,7 @@ verso/codigo/     — C code generation
 verso/ast.py      — Re-export shim (critical — see below)
 ```
 
-`main.py` is a scratch driver for manual testing.
+`main.py` is the compiler entrypoint: reads a `.vs` file, runs the full pipeline, and writes C output to `bin/<name>.c`.
 
 ### `verso/ast.py` — the identity shim
 
@@ -67,17 +72,23 @@ Key parser concepts:
 
 **Block closing rule:** `.` on its own or attached to a statement both close the innermost open block. `go_to_SNI()` consumes all EOI tokens including `.` — **do not call it after `THEN`/`ELSE`/while-condition inside block parsers**, or it will eat the closing dot of an empty block.
 
-**Expression parsing:** `parse_expression()` handles `VARIABLE [op VARIABLE]...` and `NOT expr`. Returns `BinaryOperation` or `MonadicOperation`. `BinaryOperation.operator` is a **Token object** (not a string). `parse_factor()` returns `Literal(value=['varname'])` for variables (a list) and `Literal(value='42')` for numbers (a string).
+**Expression parsing:** Three functions form a two-level precedence hierarchy:
+- `parse_expression()` handles comparisons (`EQUAL`, `DIFFERENT`, `GREATER_*`, `LESS_*`) and additive ops (`SUM`, `SUB`), delegating each operand to `parse_term()`.
+- `parse_term()` handles multiplicative ops (`MULT`, `DIV`, `REST`), delegating to `parse_factor()`.
+- `parse_factor()` returns `Literal(value=['varname', ...])` for consecutive `VARIABLE` tokens (a list of string token values) and `Literal(value='42')` for `NUMBER` (a string).
+- `NOT expr` is handled directly in `parse_expression()` and returns `MonadicOperation`.
+- `BinaryOperation.operator` is a **Token object** (not a string); access the C operator via `_C_OPERATORS[node.operator.type]`.
 
 AST node dataclasses live in `verso/sintaxe/constants.py` and are re-exported via `verso/ast.py`:
 - `Program(instructions: list[Statement])`
-- `VariableDeclaration(name, varType: PrimitiveType, value: list)`
-- `Attribution(name, value: list)`
+- `VariableDeclaration(name, varType: PrimitiveType, value: Expression)` — for `int`/`float` types, semantic analysis replaces `value` in-place with `[evaluated_number]`
+- `Attribution(name, value: Expression)` — same in-place replacement for poetic numeric expressions
 - `IfBody(condition: Expression, positive_instructions, negative_instructions)`
 - `WhileLoop(condition: list[Token], body: list[Statement])` — condition is raw token list
-- `BinaryOperation(firstOperand, operator: Token, SecondOperand)`
+- `BinaryOperation(firstOperand, operator: Token, SecondOperand)` — `operator` is a Token at runtime despite the `str` type annotation
 - `MonadicOperation(operand, operator: str | None)` — `None` for NOT
 - `Literal(value: str | list)` — list for variables, str for numbers
+- `Variable(name: str)` — defined but not currently emitted by the parser; `parse_factor()` produces `Literal(value=[names...])` for variable references instead
 - `PrintStatement(args: list)`, `BreakStatement()`, `ContinueStatement()`, `ReturnStatement(value: list)`
 
 ### Stage 3 — Semantic analysis (`verso/semantica/`)
@@ -112,7 +123,7 @@ AST node dataclasses live in `verso/sintaxe/constants.py` and are re-exported vi
 | `IF` / `THEN` / `ELSE` / `WHILE` / `FOR` | Control flow |
 | `EQUAL` / `DIFFERENT` / `GREATER_THAN` / `LESS_THAN` / `GREATER_OR_EQUAL` / `LESS_OR_EQUAL` | Comparison operators |
 | `AND` / `OR` / `NOT` | Logical operators |
-| `SUM` / `SUB` / `MULT` / `DIV` / `REST` | Arithmetic operators (`acresce`, `deduz`, `amplia`, `reparte`, `resta`) |
+| `SUM` / `SUB` / `MULT` / `DIV` / `REST` | Arithmetic operators (`acrescido de`, `privado/despido de`, `ecoado por`, `partilhado por`, `restando de`) — all are multi-word regex patterns |
 | `BOOLEAN_TRUE` / `BOOLEAN_FALSE` | Boolean literals; `Token.value` is `'1'` / `'0'` |
 | `ARTICLE` | `a`, `o`, `um`, `uma` — grammar filler |
 | `PREPOSITION` | `de`, `da` — grammar filler |
@@ -134,5 +145,5 @@ AST node dataclasses live in `verso/sintaxe/constants.py` and are re-exported vi
 
 **Control flow:**
 - `se … então` → `if` | `senão`/`porém` → `else` | `enquanto` → `while` | `.` → closes block
-- Arithmetic operators (`acresce` etc.) are parsed as `BinaryOperation` inside `se … então` conditions only; they are not handled in declarations or attributions.
+- Arithmetic operators are parsed via `parse_expression()` everywhere — in `se...então` conditions, declarations, and attributions. For `int`/`float` variables, semantic analysis intercepts the `Literal` node and evaluates poetic letter-count expressions; for other types it passes through.
 - `WhileLoop.condition` stores raw tokens; `IfBody.condition` stores an `Expression` tree from `parse_expression()`.
