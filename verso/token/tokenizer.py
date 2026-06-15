@@ -19,7 +19,7 @@ def tokenize(program: str) -> list[Token]:
         ('NUMBER',     r'\d+(\.\d+)?'),
         ('ELLIPSE',    r'\.\.\.'),
         ('DOT',        r'\.'),
-        ('COMMA'       r','),
+        ('COMMA',       r','),
         ('WHITESPACE', r'[ \t]+'),
         ('MISMATCH',   r'.'),
         ('EOL',        r'\n+'),

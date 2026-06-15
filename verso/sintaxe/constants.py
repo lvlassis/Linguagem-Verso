@@ -62,5 +62,5 @@ class MonadicOperation(Expression):
 @dataclass
 class IfBody(Statement):
     condition: Expression
-    positive_instructions: Statement
-    negative_instructions: Statement
+    positive_instructions: list[Statement]
+    negative_instructions: list[Statement]

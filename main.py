@@ -2,7 +2,7 @@ from verso.token import tokenize
 from verso.sintaxe.parser import Parser
 
 
-programa = """Amor é rocha. Amor é sutil # Comentário\n"""
+programa = """Se Amor igual rosas então Amor é sutil. # Comentário\n"""
 
 def test_tokenize(codigo):
 
