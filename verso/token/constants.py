@@ -4,6 +4,7 @@ from enum import Enum
 
 class TokenType(Enum):
     DOT = 'DOT'
+    COMMA = 'COMMA'
     EOL = 'EOL'
     NUMBER = 'NUMBER'
     ELLIPSE = 'ELLIPSE'
@@ -48,6 +49,13 @@ class TokenType(Enum):
 
     # Saída
     PRINT = 'PRINT'
+    
+    # Operações
+    SUM = 'SUM'
+    SUB = 'SUB'
+    MULT = 'MULT'
+    DIV = 'DIV'
+    REST = 'REST'
 
 
 class PrimitiveType(Enum):
@@ -94,6 +102,12 @@ PALAVRAS_RESERVADAS: dict[str, Token] = {
     "enquanto": Token(TokenType.WHILE),
     "sendo":    Token(TokenType.FOR),
     "então":    Token(TokenType.THEN),
+
+    "acresce":  Token(TokenType.SUM),
+    "deduz":    Token(TokenType.SUB),
+    "amplia":   Token(TokenType.MULT),
+    "reparte":  Token(TokenType.DIV),
+    "resta":    Token(TokenType.REST),
 
     "como":      Token(TokenType.EQUAL),
     "igual":     Token(TokenType.EQUAL),

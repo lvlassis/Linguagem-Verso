@@ -8,9 +8,10 @@ SKIP_LIST = [
 ]
 
 EOI_TOKEN_LIST = [
-    TokenType.EOL,
-    TokenType.DOT
-]
+            TokenType.EOL,
+            TokenType.DOT,
+            TokenType.COMMA
+        ]
 
 TYPE_TOKEN_LIST = [
     TokenType.PRIMITIVE_TYPE,
@@ -49,11 +50,17 @@ class Variable(Expression):
 
 @dataclass
 class BinaryOperation(Expression):
-    firstOperator: Expression
-    operation: str
-    SecondOperator: Expression
+    firstOperand: Expression
+    operator: str
+    SecondOperand: Expression
 
 @dataclass
 class MonadicOperation(Expression):
-    operator: Expression
-    operation: str
+    operand: Expression
+    operator: str
+
+@dataclass
+class IfBody(Statement):
+    condition: Expression
+    positive_instructions: list[Statement]
+    negative_instructions: list[Statement]

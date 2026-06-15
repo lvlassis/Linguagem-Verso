@@ -4,10 +4,7 @@ from verso.token import tokenize
 from verso.sintaxe.parser import Parser
 
 
-programa = """Amor é rocha em chamas. 
-Amor é sutil
-Amor é carinhoso
-"""
+programa = """Se Amor igual rosas então Amor é sutil. # Comentário\n"""
 
 def test_tokenize(codigo):
     tokens = tokenize(codigo)
@@ -20,36 +17,9 @@ def test_parser(codigo):
     parser = Parser(tokens)
     program = parser.parse_program()
 
-    print(program)
+    print(program.instructions)
 
-def test_semantic(codigo):
-    tokens = tokenize(codigo)
-    parser = Parser(tokens)
-    arvore_sintatica = parser.parse_program()
+test_tokenize(programa)
+print("")
+test_parser(programa)
 
-    semantic_analizer = SemanticAnalyzer()
-    arvore_anotada, erros = semantic_analizer.analyse(arvore_sintatica)
-    if erros:
-        for e in erros:
-            print(e)
-        return
-
-    print(arvore_anotada)
-        
-
-def test_gerar_codigo(codigo):
-    tokens = tokenize(codigo)
-    parser = Parser(tokens)
-    arvore_sintatica = parser.parse_program()
-    semantic_analizer = SemanticAnalyzer()
-    programa, erros = semantic_analizer.analyse(arvore_sintatica)
-    if erros:
-        for e in erros:
-            print(e)
-        return
-
-    codigo = GeradorCodigo().gerar(programa)
-
-    print(codigo)
-
-test_gerar_codigo(programa)
