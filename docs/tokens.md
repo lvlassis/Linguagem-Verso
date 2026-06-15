@@ -17,7 +17,7 @@ Amor {
 }
 
 é {
-  type: DECLARATION
+  type: DECL_ATTR
   value: ""
 }
 

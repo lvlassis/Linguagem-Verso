@@ -1,15 +1,43 @@
-from verso.tokens import tokenize, verso_split
+import sys
+from pathlib import Path
 
-def test_tokenize():
-    programa = """amor é rocha que quando quebra doi no peito. # Comentário"""
+from verso.token import tokenize
+from verso.sintaxe.parser import Parser
+from verso.semantica.semantica import SemanticAnalyzer
+from verso.codigo.gerador import GeradorCodigo
 
-    tokens = tokenize(programa)
-    print(tokens)
 
-def test_verso_split():
-    line = "amor é fogo que arde sem se ver."
-    tokens_1 = verso_split(line)
-    print(tokens_1)
+def compilar(fonte: str) -> str:
+    tokens = tokenize(fonte)
+    arvore = Parser(tokens).parse_program()
 
-test_tokenize()
+    arvore, erros = SemanticAnalyzer().analyse(arvore)
+    if erros:
+        for e in erros:
+            print(f"[erro semântico] {e.description}", file=sys.stderr)
+        return ""
 
+    return GeradorCodigo().gerar(arvore)
+
+
+def main() -> None:
+    if len(sys.argv) < 2:
+        print("Uso: python main.py <arquivo.vs>", file=sys.stderr)
+        sys.exit(1)
+
+    caminho = Path(sys.argv[1])
+    if not caminho.exists():
+        print(f"[verso] erro: '{caminho}' não encontrado.", file=sys.stderr)
+        sys.exit(1)
+
+    codigo = compilar(caminho.read_text(encoding='utf-8'))
+    if not codigo:
+        sys.exit(1)
+
+    saida = caminho.with_suffix('.c')
+    saida.write_text(codigo, encoding='utf-8')
+    print(f"[verso] compilado → {saida}")
+
+
+if __name__ == "__main__":
+    main()
