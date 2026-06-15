@@ -1,5 +1,5 @@
 from verso.token.constants import Token, TokenType
-from verso.sintaxe.constants import SKIP_LIST, EOI_TOKEN_LIST, TYPE_TOKEN_LIST, Statement, Expression, Program, VariableDeclaration, Atribuition
+from verso.sintaxe.constants import SKIP_LIST, EOI_TOKEN_LIST, TYPE_TOKEN_LIST, Statement, Expression, Program, VariableDeclaration, Attribution
 
 
 class Parser:
