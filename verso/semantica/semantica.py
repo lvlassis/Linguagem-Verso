@@ -102,7 +102,7 @@ class SemanticAnalyzer:
             return [SemanticError(f"'{node.name}' não foi declarada.")]
 
         declared_type = self._lookup(node.name)
-        palavras = [v for v in node.value.value if isinstance(v, str)]
+        palavras = [v for v in node.value if isinstance(v, str)]
         expressoes = [p for p in palavras if not self._is_declared(p) and not self._is_numeric_literal(p)]
 
         if expressoes:
@@ -116,7 +116,7 @@ class SemanticAnalyzer:
         return self._validar_valor(node.name, declared_type, node.value)
 
     def _validar_valor(self, varname: str, declared_type: PrimitiveType, value: list) -> list[SemanticError]:
-        palavras = [v for v in value.value if isinstance(v, str)]
+        palavras = [v for v in value if isinstance(v, str)]
         variaveis  = [p for p in palavras if self._is_declared(p)]
         expressoes = [p for p in palavras if not self._is_declared(p) and not self._is_numeric_literal(p)]
 
@@ -220,7 +220,7 @@ class SemanticAnalyzer:
     # --- expression evaluators ---
 
     def _avaliar_expressao_int(self, values: Literal) -> int:
-        palavras = [v for v in values.value if isinstance(v, str)]
+        palavras = [v for v in values if isinstance(v, str)]
 
         if len(palavras) == 1 and palavras[0].lstrip('-').isdigit():
             return int(palavras[0])
@@ -228,7 +228,7 @@ class SemanticAnalyzer:
         return int(''.join(str(len(p)) for p in palavras))
 
     def _avaliar_expressao_float(self, values: Literal) -> float:
-        palavras = [v for v in values.value if isinstance(v, str)]
+        palavras = [v for v in values if isinstance(v, str)]
 
         if len(palavras) == 1:
             try:

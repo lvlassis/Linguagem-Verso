@@ -86,7 +86,7 @@ class GeradorCodigo:
         return f'{c_type} {node.name};'
 
     def _gerar_atribuicao(self, node: Attribution) -> str:
-        return f'{node.name} = {" ".join(str(v) for v in node.value.value)};'
+        return f'{node.name} = {" ".join(str(v) for v in node.value)};'
 
     def _gerar_if(self, node: IfBody) -> str:
         cond = self._gerar_expressao(node.condition)
