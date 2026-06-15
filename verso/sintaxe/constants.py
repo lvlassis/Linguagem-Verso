@@ -75,6 +75,10 @@ class PrintStatement(Statement):
     args: list
 
 @dataclass
+class ScanStatement(Statement):
+    args: Variable
+
+@dataclass
 class BreakStatement(Statement):
     pass
 
