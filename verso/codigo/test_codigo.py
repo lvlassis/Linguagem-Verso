@@ -8,7 +8,12 @@ from verso.codigo.gerador import GeradorCodigo
 def _compilar(fonte: str) -> str:
     tokens = tokenize(fonte)
     programa = Parser(tokens).parse_program()
-    return GeradorCodigo().gerar(programa)
+    full = GeradorCodigo().gerar(programa)
+    # extrai o corpo entre "int main() {" e "return 0;" e desfaz o recuo de 4 espaços
+    start = full.index('int main() {\n') + len('int main() {\n')
+    end = full.rindex('\nreturn 0;\n}')
+    body = full[start:end]
+    return '\n'.join(line[4:] if line.startswith('    ') else line for line in body.split('\n'))
 
 
 class TestDeclaracaoVariavel(unittest.TestCase):
