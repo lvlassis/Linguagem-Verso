@@ -15,7 +15,7 @@ def test_parser(codigo):
     parser = Parser(tokens)
     program = parser.parse_program()
 
-    print(program)
+    print(program.instructions)
 
 test_tokenize(programa)
 print("")
