@@ -93,13 +93,13 @@
 
 | Operador | Palavra-chave | Léxico | Sintaxe | Semântica | Codegen |
 |----------|---------------|:------:|:-------:|:---------:|:-------:|
-| `+`      | `acresce`     | ✅ | 🔶 | ❌ | ❌ |
-| `-`      | `deduz`       | ✅ | 🔶 | ❌ | ❌ |
-| `*`      | `amplia`      | ✅ | 🔶 | ❌ | ❌ |
-| `/`      | `reparte`     | ✅ | 🔶 | ❌ | ❌ |
-| `%`      | `resta`       | ✅ | 🔶 | ❌ | ❌ |
+| `+`      | `acresce`     | ✅ | 🔶 | ❌ | ✅ |
+| `-`      | `deduz`       | ✅ | 🔶 | ❌ | ✅ |
+| `*`      | `amplia`      | ✅ | 🔶 | ❌ | ✅ |
+| `/`      | `reparte`     | ✅ | 🔶 | ❌ | ✅ |
+| `%`      | `resta`       | ✅ | 🔶 | ❌ | ✅ |
 
-> Sintaxe 🔶: operadores são parseados como `BinaryOperation` dentro de expressões de condição (`se … então`). Não são reconhecidos em declarações nem atribuições.
+> Sintaxe 🔶: operadores aritméticos são parseados como `BinaryOperation` dentro de expressões de condição (`se … então`). Não são reconhecidos em declarações nem atribuições.
 
 ---
 
@@ -107,14 +107,14 @@
 
 | Estrutura     | Romântica                   | Léxico | Sintaxe | Semântica | Codegen |
 |---------------|-----------------------------|:------:|:-------:|:---------:|:-------:|
-| `if`          | `se … então`                | ✅ | ✅ | 🔶 | 🔶 |
-| `else`        | `senão`, `porém`            | ✅ | ✅ | 🔶 | 🔶 |
+| `if`          | `se … então`                | ✅ | ✅ | 🔶 | ✅ |
+| `else`        | `senão`, `porém`            | ✅ | ✅ | 🔶 | ✅ |
 | `else if`     | `porém, se` / `porém, caso` | ❌ | ❌ | ❌ | ❌ |
 | `while`       | `enquanto`                  | ✅ | ✅ | ✅ | ✅ |
 | `for`         | `sendo`                     | ✅ | ❌ | ❌ | ❌ |
 | fechamento    | `.` (ponto final)           | ✅ | ✅ | — | — |
 
-> `if`/`else` marcados como 🔶: corpo é parseado e visitado com escopo próprio, mas a condição não é analisada na semântica nem gerada no codegen (placeholder `(...)`).
+> `if`/`else` marcados como 🔶 em Semântica: corpo é visitado com escopo próprio, mas a condição não é verificada semanticamente (variáveis/tipos na condição não são validados).
 
 > `for` não tem sintaxe definida na spec além da keyword `sendo`.
 

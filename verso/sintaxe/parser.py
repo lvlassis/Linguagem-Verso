@@ -106,7 +106,8 @@ class Parser:
                     raise SyntaxError(f"Erro sintático: expressão esperada {TokenType.DECL_ATTR}")
                 return self.parse_decl_attr()
             case TokenType.EOL:
-                _ = self.go_to_SNI()
+                while self.get_current_token() and self.get_current_token().type == TokenType.EOL:
+                    self.consume_token()
             case TokenType.DOT:
                 _ = self.go_to_SNI()
 
@@ -120,29 +121,51 @@ class Parser:
         self.consume_token([TokenType.THEN])
 
         instructions = []
-        while self.get_current_token() and self.get_current_token().type not in [TokenType.DOT, TokenType.ELSE]:
-            print(self.get_current_token())
+        closed = False
+        while self.get_current_token():
+            tok = self.get_current_token()
+            if tok.type == TokenType.DOT:
+                self.consume_token()
+                closed = True
+                break
+            self._last_eoi = None
             instruction = self.parse_instructions()
             if instruction is not None:
                 instructions.append(instruction)
+            if self._last_eoi == TokenType.DOT:
+                closed = True
+                break
 
-        if self.get_current_token() is None or self.get_current_token().type == TokenType.ELSE:
-            raise SyntaxError(f"Bloco IF não foi fechado {self.get_current_token()}")
-        self.consume_token([TokenType.DOT])
+        if not closed:
+            raise SyntaxError("Bloco IF não foi fechado")
+
+        while self.get_current_token() and self.get_current_token().type == TokenType.EOL:
+            self.consume_token()
 
         negative_instructions = []
-        token = self.get_current_token()
-        if token and token.type == TokenType.ELSE:
+        if self.get_current_token() and self.get_current_token().type == TokenType.ELSE:
             self.consume_token([TokenType.ELSE])
 
-            while self.get_current_token() and self.get_current_token().type != TokenType.DOT:
+            while self.get_current_token() and self.get_current_token().type == TokenType.EOL:
+                self.consume_token()
+
+            closed_else = False
+            while self.get_current_token():
+                tok = self.get_current_token()
+                if tok.type == TokenType.DOT:
+                    self.consume_token()
+                    closed_else = True
+                    break
+                self._last_eoi = None
                 instruction = self.parse_instructions()
                 if instruction is not None:
                     negative_instructions.append(instruction)
+                if self._last_eoi == TokenType.DOT:
+                    closed_else = True
+                    break
 
-            if self.get_current_token() is None:
+            if not closed_else:
                 raise SyntaxError("Bloco ELSE não foi fechado")
-            self.consume_token([TokenType.DOT])
 
         return IfBody(
             condition=condition,

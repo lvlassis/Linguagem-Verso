@@ -150,6 +150,51 @@ class TestBreakContinueReturn(unittest.TestCase):
         self.assertEqual(_compilar("devolva amor.\n"), "return amor;")
 
 
+class TestIf(unittest.TestCase):
+
+    def test_if_igualdade(self):
+        fonte = "se amor igual paz então\ngrito amor.\n"
+        esperado = "if (amor == paz) {\n    " + 'printf("amor\\n");' + "\n}"
+        self.assertEqual(_compilar(fonte), esperado)
+
+    def test_if_maior(self):
+        fonte = "se amor maior 10 então\ngrito amor.\n"
+        esperado = "if (amor > 10) {\n    " + 'printf("amor\\n");' + "\n}"
+        self.assertEqual(_compilar(fonte), esperado)
+
+    def test_if_menor(self):
+        fonte = "se amor menor 5 então\ngrito paz.\n"
+        esperado = "if (amor < 5) {\n    " + 'printf("paz\\n");' + "\n}"
+        self.assertEqual(_compilar(fonte), esperado)
+
+    def test_if_diferente(self):
+        fonte = "se amor diferente paz então\ngrito amor.\n"
+        esperado = "if (amor != paz) {\n    " + 'printf("amor\\n");' + "\n}"
+        self.assertEqual(_compilar(fonte), esperado)
+
+    def test_if_com_else(self):
+        fonte = "se amor igual paz então\ngrito amor.\nsenão\ngrito paz.\n"
+        esperado = (
+            "if (amor == paz) {\n    " + 'printf("amor\\n");' + "\n}"
+            " else {\n    " + 'printf("paz\\n");' + "\n}"
+        )
+        self.assertEqual(_compilar(fonte), esperado)
+
+    def test_if_not(self):
+        fonte = "se não amor igual paz então\ngrito amor.\n"
+        esperado = "if (!(amor == paz)) {\n    " + 'printf("amor\\n");' + "\n}"
+        self.assertEqual(_compilar(fonte), esperado)
+
+    def test_if_corpo_vazio(self):
+        fonte = "se amor igual paz então\n.\n"
+        self.assertEqual(_compilar(fonte), "if (amor == paz) {\n\n}")
+
+    def test_if_declaracao_no_corpo(self):
+        fonte = "se amor igual paz então\nsol é rocha.\n"
+        esperado = "if (amor == paz) {\n    int sol;\n}"
+        self.assertEqual(_compilar(fonte), esperado)
+
+
 class TestWhile(unittest.TestCase):
 
     def test_condicao_igualdade(self):

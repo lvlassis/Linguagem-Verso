@@ -1,6 +1,7 @@
 from verso.ast import (
-    Program, Statement,
+    Program, Statement, Expression,
     VariableDeclaration, Attribution, WhileLoop, IfBody,
+    Literal, BinaryOperation, MonadicOperation,
     PrintStatement, BreakStatement, ContinueStatement, ReturnStatement,
 )
 from verso.token.constants import Token, TokenType, PrimitiveType
@@ -24,6 +25,16 @@ _C_COMPARISONS: dict[TokenType, str] = {
     TokenType.OR:               '||',
     TokenType.NOT:              '!',
 }
+
+_C_ARITHMETIC: dict[TokenType, str] = {
+    TokenType.SUM:  '+',
+    TokenType.SUB:  '-',
+    TokenType.MULT: '*',
+    TokenType.DIV:  '/',
+    TokenType.REST: '%',
+}
+
+_C_OPERATORS: dict[TokenType, str] = {**_C_COMPARISONS, **_C_ARITHMETIC}
 
 _C_BOOLEANS: dict[TokenType, str] = {
     TokenType.BOOLEAN_TRUE:  'true',
@@ -65,12 +76,29 @@ class GeradorCodigo:
         return f'{node.name} = {" ".join(str(v) for v in node.value)};'
 
     def _gerar_if(self, node: IfBody) -> str:
+        cond = self._gerar_expressao(node.condition)
         corpo = '\n'.join(f'    {self._visitar(s)}' for s in node.positive_instructions)
-        resultado = f'if (...) {{\n{corpo}\n}}'
+        resultado = f'if ({cond}) {{\n{corpo}\n}}'
         if node.negative_instructions:
             senao = '\n'.join(f'    {self._visitar(s)}' for s in node.negative_instructions)
             resultado += f' else {{\n{senao}\n}}'
         return resultado
+
+    def _gerar_expressao(self, node: Expression) -> str:
+        match node:
+            case BinaryOperation():
+                left = self._gerar_expressao(node.firstOperand)
+                right = self._gerar_expressao(node.SecondOperand)
+                op = _C_OPERATORS[node.operator.type]
+                return f'{left} {op} {right}'
+            case MonadicOperation():
+                operand = self._gerar_expressao(node.operand)
+                return f'!({operand})'
+            case Literal():
+                if isinstance(node.value, list):
+                    return ' '.join(str(v) for v in node.value if v is not None)
+                return str(node.value)
+        raise NotImplementedError(f"Expressão não implementada: {type(node).__name__}")
 
     def _gerar_while(self, node: WhileLoop) -> str:
         cond = self._gerar_condicao(node.condition)
