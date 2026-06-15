@@ -79,6 +79,8 @@ class SemanticAnalyzer:
                 node.value = [self._avaliar_expressao_int(node.value)]
             elif node.varType == PrimitiveType.FLOAT:
                 node.value = [self._avaliar_expressao_float(node.value)]
+            else:
+                return self._validar_valor(node.name, node.varType, node.value)
 
         return []
 
@@ -88,9 +90,6 @@ class SemanticAnalyzer:
 
         declared_type = self._lookup(node.name)
         palavras = [v for v in node.value if isinstance(v, str)]
-
-        variaveis  = [p for p in palavras if self._is_declared(p)]
-        literais   = [p for p in palavras if not self._is_declared(p) and self._is_numeric_literal(p)]
         expressoes = [p for p in palavras if not self._is_declared(p) and not self._is_numeric_literal(p)]
 
         if expressoes:
@@ -100,8 +99,16 @@ class SemanticAnalyzer:
             elif declared_type == PrimitiveType.FLOAT:
                 node.value = [self._avaliar_expressao_float(node.value)]
                 return []
-            else:
-                return [SemanticError(f"'{expressoes[0]}' não foi declarada.")]
+
+        return self._validar_valor(node.name, declared_type, node.value)
+
+    def _validar_valor(self, varname: str, declared_type: PrimitiveType, value: list) -> list[SemanticError]:
+        palavras = [v for v in value if isinstance(v, str)]
+        variaveis  = [p for p in palavras if self._is_declared(p)]
+        expressoes = [p for p in palavras if not self._is_declared(p) and not self._is_numeric_literal(p)]
+
+        if expressoes:
+            return [SemanticError(f"'{expressoes[0]}' não foi declarada.")]
 
         errors = []
         for val in variaveis:
@@ -109,7 +116,7 @@ class SemanticAnalyzer:
             if val_type != declared_type:
                 errors.append(SemanticError(
                     f"Tipo incompatível: '{val}' é {val_type.value}, "
-                    f"mas '{node.name}' espera {declared_type.value}."
+                    f"mas '{varname}' espera {declared_type.value}."
                 ))
         return errors
 

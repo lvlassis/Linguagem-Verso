@@ -193,6 +193,78 @@ class TestBreakContinueReturnSemantica(unittest.TestCase):
         self.assertIsNone(erros)
 
 
+class TestValidacaoTiposNaoNumericos(unittest.TestCase):
+
+    # --- char ---
+
+    def test_char_declaracao_com_variavel_compativel(self):
+        _, erros = _analisar("paz é traço.\nalma é traço paz.\n")
+        self.assertIsNone(erros)
+
+    def test_char_declaracao_com_variavel_incompativel(self):
+        _, erros = _analisar("amor é rocha.\nalma é traço amor.\n")
+        self.assertIsNotNone(erros)
+        self.assertTrue(any('incompatível' in e.description for e in erros))
+
+    def test_char_declaracao_com_variavel_nao_declarada(self):
+        _, erros = _analisar("alma é traço cor.\n")
+        self.assertIsNotNone(erros)
+        self.assertTrue(any("'cor' não foi declarada" in e.description for e in erros))
+
+    def test_char_atribuicao_com_variavel_compativel(self):
+        _, erros = _analisar("paz é traço.\nalma é traço.\nalma é paz.\n")
+        self.assertIsNone(erros)
+
+    def test_char_atribuicao_com_variavel_incompativel(self):
+        _, erros = _analisar("amor é rocha.\nalma é traço.\nalma é amor.\n")
+        self.assertIsNotNone(erros)
+        self.assertTrue(any('incompatível' in e.description for e in erros))
+
+    # --- string ---
+
+    def test_string_declaracao_com_variavel_compativel(self):
+        _, erros = _analisar("canto é verso.\npoema é verso canto.\n")
+        self.assertIsNone(erros)
+
+    def test_string_declaracao_com_variavel_incompativel(self):
+        _, erros = _analisar("amor é rocha.\npoema é verso amor.\n")
+        self.assertIsNotNone(erros)
+        self.assertTrue(any('incompatível' in e.description for e in erros))
+
+    def test_string_atribuicao_com_variavel_incompativel(self):
+        _, erros = _analisar("amor é rocha.\npoema é verso.\npoema é amor.\n")
+        self.assertIsNotNone(erros)
+        self.assertTrue(any('incompatível' in e.description for e in erros))
+
+    # --- bool ---
+
+    def test_bool_declaracao_com_literal_verdadeiro(self):
+        _, erros = _analisar("que viver seja dilema verdadeiro.\n")
+        self.assertIsNone(erros)
+
+    def test_bool_declaracao_com_literal_falso(self):
+        _, erros = _analisar("que morte seja dilema falso.\n")
+        self.assertIsNone(erros)
+
+    def test_bool_declaracao_com_variavel_compativel(self):
+        _, erros = _analisar("morte é dilema.\nviver é dilema morte.\n")
+        self.assertIsNone(erros)
+
+    def test_bool_declaracao_com_variavel_incompativel(self):
+        _, erros = _analisar("amor é rocha.\nviver é dilema amor.\n")
+        self.assertIsNotNone(erros)
+        self.assertTrue(any('incompatível' in e.description for e in erros))
+
+    def test_bool_atribuicao_com_variavel_compativel(self):
+        _, erros = _analisar("morte é dilema.\nviver é dilema.\nviver é morte.\n")
+        self.assertIsNone(erros)
+
+    def test_bool_atribuicao_com_variavel_incompativel(self):
+        _, erros = _analisar("amor é rocha.\nviver é dilema.\nviver é amor.\n")
+        self.assertIsNotNone(erros)
+        self.assertTrue(any('incompatível' in e.description for e in erros))
+
+
 class TestTabelaDeSimbolos(unittest.TestCase):
 
     def test_redeclaracao(self):

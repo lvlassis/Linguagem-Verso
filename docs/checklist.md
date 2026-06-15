@@ -21,9 +21,9 @@
 |----------|------------------------------|:------:|:-------:|:---------:|:-------:|
 | `int`    | `rocha`                      | ✅ | ✅ | ✅ | ✅ |
 | `float`  | `bruma`, `névoa`, `cinza`    | ✅ | ✅ | ✅ | ✅ |
-| `char`   | `traço`, `suspiro`           | ✅ | ✅ | ❌ | ✅ |
-| `char*`  | `verso`, `canção`, `prosa`   | ✅ | ✅ | ❌ | ✅ |
-| `bool`   | `dilema`, `dualidade`        | ✅ | ✅ | ❌ | ✅ |
+| `char`   | `traço`, `suspiro`           | ✅ | ✅ | ✅ | ✅ |
+| `char*`  | `verso`, `canção`, `prosa`   | ✅ | ✅ | ✅ | ✅ |
+| `bool`   | `dilema`, `dualidade`        | ✅ | ✅ | ✅ | ✅ |
 | `fixed`  | indefinido                   | ❌ | ❌ | ❌ | ❌ |
 
 ---
