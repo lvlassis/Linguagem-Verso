@@ -45,7 +45,7 @@ All compiler logic lives in `verso/tokens.py`. The only implemented stage is lex
 | `DOT` | `.` — statement/block terminator |
 | `ELLIPSE` | `...` — used in float value phrases |
 | `NUMBER` | Integer or float literal (`\d+(\.\d+)?`) |
-| `DECLARATION` | `é`, `és`, `seja` — assignment/declaration keyword |
+| `DECL_ATTR` | `é`, `és`, `seja` — assignment/declaration keyword |
 | `PRIMITIVE_TYPE` | Type keyword (`rocha`, `bruma`) |
 | `DATA_STRUCT` | Array/collection keyword (`coro`, `compêndio`) |
 | `IF` / `ELSE` / `WHILE` / `FOR` | Control flow |

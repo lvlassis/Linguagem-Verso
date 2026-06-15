@@ -7,17 +7,17 @@ class Parser:
         self.tokens = tokens
         self.pos = 0
 
-    def get_current_token(self) -> Token:
+    def get_current_token(self) -> Token|None:
         if self.pos < len(self.tokens):
             return self.tokens[self.pos]
         return None
     
-    def get_next_token(self) -> Token:
+    def get_next_token(self) -> Token|None:
         if self.pos + 1 < len(self.tokens):
             return self.tokens[self.pos + 1]
         return None
     
-    def get_next_relevant_token(self) -> Token:
+    def get_next_relevant_token(self) -> Token|None:
         index = 0
         while True:
             if self.pos + index >= len(self.tokens):
@@ -28,7 +28,7 @@ class Parser:
             index += 1
         return None
     
-    def go_to_next_relevant_token(self) -> tuple[list[Token], Token]:
+    def go_to_next_relevant_token(self) -> tuple[list[Token], Token|None]|None:
         tokens = []
         while True:
             if self.pos >= len(self.tokens):
@@ -40,7 +40,7 @@ class Parser:
             tokens.append(self.consume_token(SKIP_LIST))
         return None
     
-    def go_to_EOI(self) -> tuple[list[Token], Token]:
+    def go_to_EOI(self) -> tuple[list[Token], Token|None]|None:
         """Consome todos os tokens até chegar à um '.' ou EOL"""
 
         tokens = []
@@ -54,7 +54,7 @@ class Parser:
             tokens.append(self.consume_token())
         return None
     
-    def go_to_SNI(self) -> tuple[list[Token], Token]:
+    def go_to_SNI(self) -> tuple[list[Token], Token|None]|None:
         """Consome todos os tokens até chegar ao início da próxima instrução."""
 
         tokens = []
@@ -68,7 +68,7 @@ class Parser:
                 break
         return None
     
-    def consume_token(self, expected_type: list[TokenType] = None) -> Token:
+    def consume_token(self, expected_type: list[TokenType]|None= None) -> Token:
         token = self.get_current_token()
         if not token:
             raise SyntaxError("Fim inesperado do arquivo")
@@ -132,7 +132,7 @@ class Parser:
 
             self.consume_token([EOI.type])
 
-            return Atribuition(
+            return Attribution(
                 name=first_token.value,
                 value=values
             )

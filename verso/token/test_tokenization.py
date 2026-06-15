@@ -8,7 +8,7 @@ class TestDeclaracao(unittest.TestCase):
     def test_declaracao_simples(self):
         tokens = tokenize("Amor é rocha.\n")
         self.assertEqual(tokens[0], Token(TokenType.VARIABLE, 'amor'))
-        self.assertEqual(tokens[1], Token(TokenType.DECLARATION, 'é'))
+        self.assertEqual(tokens[1], Token(TokenType.DECL_ATTR, 'é'))
         self.assertEqual(tokens[2], Token(TokenType.PRIMITIVE_TYPE, PrimitiveType.INTEGER))
         self.assertEqual(tokens[3], Token(TokenType.DOT, '.'))
         self.assertEqual(tokens[4], Token(TokenType.EOL, '\n'))
@@ -21,13 +21,13 @@ class TestDeclaracao(unittest.TestCase):
     def test_declaracao_que_seja(self):
         tokens = tokenize("Que o amor seja rocha.\n")
         self.assertEqual(tokens[0], Token(TokenType.CONJUNCTION, 'que'))
-        self.assertEqual(tokens[3], Token(TokenType.DECLARATION, 'seja'))
+        self.assertEqual(tokens[3], Token(TokenType.DECL_ATTR, 'seja'))
 
     def test_aliases_de_declaracao(self):
         for alias in ('guarda', 'encerra', 'guarde', 'encerre'):
             with self.subTest(alias=alias):
                 tokens = tokenize(f"amor {alias} paz.\n")
-                self.assertEqual(tokens[1].type, TokenType.DECLARATION)
+                self.assertEqual(tokens[1].type, TokenType.DECL_ATTR)
 
     def test_comentario_descartado(self):
         tokens = tokenize("# int amor;\n")
