@@ -18,6 +18,12 @@ TYPE_TOKEN_LIST = [
     TokenType.DATA_STRUCT
 ]
 
+FILLING_TOKENS_LIST = [
+    TokenType.ARTICLE,
+    TokenType.PREPOSITION,
+    TokenType.CONJUNCTION
+]
+
 class ASTNode:
     pass
 class Statement(ASTNode):

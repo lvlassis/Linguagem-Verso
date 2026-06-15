@@ -1,9 +1,9 @@
 from verso.token.constants import Token, TokenType
 from verso.sintaxe.constants import (
-    SKIP_LIST, EOI_TOKEN_LIST, TYPE_TOKEN_LIST,
+    SKIP_LIST, EOI_TOKEN_LIST, TYPE_TOKEN_LIST, FILLING_TOKENS_LIST,
     Statement, Expression, Program,
     VariableDeclaration, Attribution, Variable, Literal,
-    WhileLoop, BinaryOperation, MonadicOperation, IfBody,
+    WhileLoop, BinaryOperation, MonadicOperation, IfBody, ScanStatement,
     PrintStatement, BreakStatement, ContinueStatement, ReturnStatement,
 )
 
@@ -178,31 +178,25 @@ class Parser:
 
     def parse_while(self) -> WhileLoop:
         self.consume_token([TokenType.WHILE])
-
-        condition_tokens, eoi = self.go_to_EOI()
-        condition = [t for t in condition_tokens if t.type not in SKIP_LIST]
-        self.consume_token([eoi.type])
+        condition = self.parse_expression()
         self.go_to_SNI()
 
         body = []
-        while self.get_current_token():
-            if self.get_current_token().type == TokenType.DOT:
-                self.go_to_SNI()
-                break
-            self._last_eoi = None
+        while self.get_current_token() and self.get_current_token().type != TokenType.DOT:
             instruction = self.parse_instructions()
             if instruction is not None:
                 body.append(instruction)
-            if self._last_eoi == TokenType.DOT:
-                break
 
         return WhileLoop(condition=condition, body=body)
 
     # --- expressions ---
 
-    def parse_expression(self) -> Expression:
-        _, token = self.go_to_next_relevant_token()
-        if token.type == TokenType.VARIABLE:
+    def parse_expression(self, ignore_complements=True) -> Expression:
+        if ignore_complements:
+            _, token = self.go_to_next_relevant_token()
+        else:
+            token = self.get_current_token()
+        if token.type == TokenType.VARIABLE or token.type in FILLING_TOKENS_LIST:
             left_node = self.parse_term()
 
             OPERATIONS = [
@@ -245,8 +239,8 @@ class Parser:
         if token.type == TokenType.NUMBER:
             self.consume_token()
             return Literal(value=token.value)
-        elif token.type == TokenType.VARIABLE:
-            tokens, _ = self._go_to_nex_diff_from(TokenType.VARIABLE)
+        elif token.type == TokenType.VARIABLE or token.type in FILLING_TOKENS_LIST:
+            tokens, _ = self._go_to_nex_diff_from(TokenType.VARIABLE, ignore_complements=False)
             values = [t.value for t in tokens]
             return Literal(value=values)
 
@@ -277,14 +271,7 @@ class Parser:
 
     def parse_print(self) -> PrintStatement:
         self.consume_token([TokenType.PRINT])
-        tokens = self.go_to_EOI()
-        if tokens is None:
-            raise SyntaxError("Espera-se um \\n ou um . ao fim da instrução. Nenhum foi fornecido.")
-        
-        value_tokens, EOI = tokens
-        args = [t.value for t in value_tokens]
-        self._last_eoi = EOI.type
-        self.consume_token([EOI.type])
+        args = self.parse_expression(ignore_complements=False)
         return PrintStatement(args=args)
 
     def parse_break(self) -> BreakStatement:
@@ -331,8 +318,14 @@ class Parser:
             return self.tokens[index]
         return None
 
-    def _go_to_nex_diff_from(self, tType: TokenType) -> tuple[list[Token], Token | None]:
+    def _go_to_nex_diff_from(self, tType: TokenType, ignore_complements=True) -> tuple[list[Token], Token | None]:
+        def _run_condition():
+            current_token = self.get_current_token()
+            if ignore_complements:
+                return current_token and current_token.type == tType
+            return current_token and (current_token.type == tType or current_token.type in FILLING_TOKENS_LIST)
+
         tokens = []
-        while self.get_current_token() and self.get_current_token().type == tType:
+        while _run_condition():
             tokens.append(self.consume_token())
         return tokens, self.get_current_token()
