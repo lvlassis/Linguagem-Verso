@@ -1,5 +1,5 @@
-from verso.token.constants import TokenType
 from dataclasses import dataclass
+from verso.token.constants import TokenType
 
 SKIP_LIST = [
     TokenType.ARTICLE,

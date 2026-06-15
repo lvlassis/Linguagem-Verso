@@ -79,16 +79,13 @@ class Parser:
         self.pos += 1
         return token
     
-    def parse_program(self) -> list[Statement]:
+    def parse_program(self) -> Program:
         instructions = []
-        while True:
-            if self.get_current_token() is None:
-                break
-
+        while self.get_current_token():
             instruction = self.parse_instructions()
             if instruction is not None:
                 instructions.append(instruction)
-        return instructions
+        return Program(instructions=instructions)
 
     def parse_instructions(self) -> Statement | None:
         _, token = self.go_to_next_relevant_token() # Ignora artigos
@@ -103,9 +100,9 @@ class Parser:
                 else:
                     raise SyntaxError(f"Erro sintático: expressão esperada {TokenType.DECL_ATTR}")
             case TokenType.EOL:
-                _,_ = self.go_to_SNI()
+                self.go_to_SNI()
             case TokenType.DOT:
-                _,_ = self.go_to_SNI()
+                self.go_to_SNI()
             
         return None
     
