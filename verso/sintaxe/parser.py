@@ -1,6 +1,6 @@
 from verso.token.constants import Token, TokenType
 from verso.sintaxe.constants import (
-    SKIP_LIST, EOI_TOKEN_LIST, TYPE_TOKEN_LIST, FILLING_TOKENS_LIST,
+    SKIP_LIST, EOI_TOKEN_LIST, TYPE_TOKEN_LIST, FILLING_TOKENS_LIST, BOOLEAN_TOKENS_LIST,
     Statement, Expression, Program,
     VariableDeclaration, Attribution, Variable, Literal,
     WhileLoop, BinaryOperation, MonadicOperation, IfBody, ScanStatement,
@@ -85,7 +85,12 @@ class Parser:
         return Program(instructions=instructions)
 
     def parse_instructions(self) -> Statement | None:
-        _, token = self.go_to_next_relevant_token()
+        until_next_instrucion = self.go_to_SNI()
+        if until_next_instrucion is None:
+            return None
+        _,token = self.go_to_next_relevant_token()
+        if token is None:
+            return None
 
         match token.type:
             case TokenType.IF:
@@ -122,7 +127,7 @@ class Parser:
 
     def parse_if(self) -> Statement:
         self.consume_token([TokenType.IF])
-        condition = self.parse_expression()
+        condition = self.parse_expression(ignore_complements=False)
         self.consume_token([TokenType.THEN])
 
         instructions = []
@@ -171,7 +176,6 @@ class Parser:
 
             if not closed_else:
                 raise SyntaxError("Bloco ELSE não foi fechado")
-
         return IfBody(
             condition=condition,
             positive_instructions=instructions,
@@ -180,9 +184,7 @@ class Parser:
 
     def parse_while(self) -> WhileLoop:
         self.consume_token([TokenType.WHILE])
-        condition = self.parse_expression()
-        self.go_to_SNI()
-
+        condition = self.parse_expression(ignore_complements=False)
         body = []
         while self.get_current_token() and self.get_current_token().type != TokenType.DOT:
             instruction = self.parse_instructions()
@@ -221,6 +223,10 @@ class Parser:
             self.consume_token([TokenType.NOT])
             operand = self.parse_expression()
             return MonadicOperation(operand=operand, operator=token.value)
+        elif token.type in BOOLEAN_TOKENS_LIST:
+            self.consume_token(BOOLEAN_TOKENS_LIST)
+            return Literal(token.value)
+
 
     def parse_term(self) -> Expression:
         left_node = self.parse_factor()
@@ -245,6 +251,9 @@ class Parser:
             tokens, _ = self._go_to_nex_diff_from(TokenType.VARIABLE, ignore_complements=False)
             values = [t.value for t in tokens]
             return Literal(value=values)
+        elif token.type in BOOLEAN_TOKENS_LIST:
+            self.consume_token()
+            return Literal(value=token)
 
     # --- declarations and attributions ---
 
@@ -330,7 +339,7 @@ class Parser:
             current_token = self.get_current_token()
             if ignore_complements:
                 return current_token and current_token.type == tType
-            return current_token and (current_token.type == tType or current_token.type in FILLING_TOKENS_LIST)
+            return current_token and (current_token.type == tType or current_token.type in FILLING_TOKENS_LIST or current_token.type == TokenType.ELLIPSE)
 
         tokens = []
         while _run_condition():
