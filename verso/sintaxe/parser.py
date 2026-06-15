@@ -121,12 +121,13 @@ class Parser:
 
         instructions = []
         while self.get_current_token() and self.get_current_token().type not in [TokenType.DOT, TokenType.ELSE]:
+            print(self.get_current_token())
             instruction = self.parse_instructions()
             if instruction is not None:
                 instructions.append(instruction)
 
         if self.get_current_token() is None or self.get_current_token().type == TokenType.ELSE:
-            raise SyntaxError("Bloco IF não foi fechado")
+            raise SyntaxError(f"Bloco IF não foi fechado {self.get_current_token()}")
         self.consume_token([TokenType.DOT])
 
         negative_instructions = []
@@ -234,7 +235,6 @@ class Parser:
             value_tokens, EOI = self.go_to_EOI()
             values = [token.value for token in value_tokens]
             self._last_eoi = EOI.type
-            self.consume_token([EOI.type])
 
             return VariableDeclaration(
                 name=first_token.value,
@@ -245,7 +245,6 @@ class Parser:
             value_tokens, EOI = self.go_to_EOI()
             values = [token.value for token in value_tokens]
             self._last_eoi = EOI.type
-            self.consume_token([EOI.type])
 
             return Attribution(
                 name=first_token.value,
