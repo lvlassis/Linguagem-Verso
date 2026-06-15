@@ -237,5 +237,60 @@ class TestEntrada(unittest.TestCase):
         self.assertEqual(self._tipo("prossiga\n"), TokenType.CONTINUE)
 
 
+class TestArray(unittest.TestCase):
+    # "vida é um compêndio rochoso.\n"
+    # [0]vida  [1]é  [2]um(ARTICLE)  [3]compêndio(DATA_STRUCT)  [4]rochoso(PRIMITIVE_TYPE) ...
+
+    def test_compendio_tokeniza_como_data_struct(self):
+        tokens = tokenize("vida é um compêndio rochoso.\n")
+        self.assertEqual(tokens[3].type, TokenType.DATA_STRUCT)
+
+    def test_conjunto_tokeniza_como_data_struct(self):
+        tokens = tokenize("sons é um conjunto rochoso.\n")
+        self.assertEqual(tokens[3].type, TokenType.DATA_STRUCT)
+
+    def test_rochoso_tokeniza_como_primitive_type_int(self):
+        tokens = tokenize("vida é um compêndio rochoso.\n")
+        self.assertEqual(tokens[4].type, TokenType.PRIMITIVE_TYPE)
+        self.assertEqual(tokens[4].value, PrimitiveType.INTEGER)
+
+    def test_rochosa_tokeniza_como_primitive_type_int(self):
+        tokens = tokenize("vida é um compêndio rochosa.\n")
+        self.assertEqual(tokens[4].value, PrimitiveType.INTEGER)
+
+    def test_enevoado_tokeniza_como_primitive_type_float(self):
+        tokens = tokenize("dados é um compêndio enevoado.\n")
+        self.assertEqual(tokens[4].value, PrimitiveType.FLOAT)
+
+    def test_cinzento_tokeniza_como_primitive_type_float(self):
+        tokens = tokenize("névoas é um compêndio cinzento.\n")
+        self.assertEqual(tokens[4].value, PrimitiveType.FLOAT)
+
+    def test_tracado_tokeniza_como_primitive_type_char(self):
+        tokens = tokenize("sinais é um compêndio traçado.\n")
+        self.assertEqual(tokens[4].value, PrimitiveType.CHAR)
+
+    def test_suspirado_tokeniza_como_primitive_type_char(self):
+        tokens = tokenize("sinais é um compêndio suspirado.\n")
+        self.assertEqual(tokens[4].value, PrimitiveType.CHAR)
+
+    def test_versejado_tokeniza_como_primitive_type_string(self):
+        tokens = tokenize("poemas é um compêndio versejado.\n")
+        self.assertEqual(tokens[4].value, PrimitiveType.STRING)
+
+    def test_prosaico_tokeniza_como_primitive_type_string(self):
+        tokens = tokenize("textos é um compêndio prosaico.\n")
+        self.assertEqual(tokens[4].value, PrimitiveType.STRING)
+
+    def test_dubio_tokeniza_como_primitive_type_bool(self):
+        tokens = tokenize("flags é um compêndio dúbio.\n")
+        self.assertEqual(tokens[4].value, PrimitiveType.BOOL)
+
+    def test_com_tokeniza_como_with(self):
+        # [0]vida [1]é [2]um [3]compêndio [4]rochoso [5]com
+        tokens = tokenize("vida é um compêndio rochoso com amor.\n")
+        self.assertEqual(tokens[5].type, TokenType.WITH)
+
+
 if __name__ == '__main__':
     unittest.main()

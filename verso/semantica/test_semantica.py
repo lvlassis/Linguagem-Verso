@@ -381,6 +381,70 @@ class TestTabelaDeSimbolos(unittest.TestCase):
         self.assertIsNone(erros)
 
 
+class TestArraySemantica(unittest.TestCase):
+
+    def test_array_int_valores_avaliados(self):
+        arvore, erros = _analisar("vida é um compêndio rochoso com amor, dor.\n")
+        self.assertIsNone(erros)
+        self.assertEqual(arvore.instructions[0].values, [4, 3])
+
+    def test_array_int_tamanho_avaliado(self):
+        arvore, erros = _analisar("vida é um compêndio rochoso de amor.\n")
+        self.assertIsNone(erros)
+        self.assertEqual(arvore.instructions[0].size, 4)
+
+    def test_array_float_valores_avaliados(self):
+        arvore, erros = _analisar("dados é um compêndio enevoado com breve, leve.\n")
+        self.assertIsNone(erros)
+        self.assertEqual(arvore.instructions[0].values, [5, 4])
+
+    def test_array_char_vazio_sem_erros(self):
+        _, erros = _analisar("letras é um compêndio traçado.\n")
+        self.assertIsNone(erros)
+
+    def test_array_redeclaracao_gera_erro(self):
+        _, erros = _analisar("vida é um compêndio rochoso.\nvida é um compêndio rochoso.\n")
+        self.assertIsNotNone(erros)
+        self.assertTrue(any("já foi declarada" in e.description for e in erros))
+
+    def test_conjunto_alias_sem_erros(self):
+        _, erros = _analisar("sons é um conjunto rochoso de eco.\n")
+        self.assertIsNone(erros)
+
+    def test_array_bool_dubio_sem_erros(self):
+        _, erros = _analisar("bandeiras é um compêndio dúbio.\n")
+        self.assertIsNone(erros)
+
+    def test_array_string_versejado_sem_erros(self):
+        _, erros = _analisar("poemas é um compêndio versejado.\n")
+        self.assertIsNone(erros)
+
+    def test_array_valores_numericos_literais(self):
+        # literais numéricos são convertidos para int, não contados por letras
+        arvore, erros = _analisar("notas é um compêndio rochoso com 4, 3, 10.\n")
+        self.assertIsNone(erros)
+        self.assertEqual(arvore.instructions[0].values, [4, 3, 10])
+
+    def test_array_tamanho_numerico_literal(self):
+        arvore, erros = _analisar("notas é um compêndio rochoso de 5.\n")
+        self.assertIsNone(erros)
+        self.assertEqual(arvore.instructions[0].size, 5)
+
+    def test_array_rochosa_variante_feminina(self):
+        _, erros = _analisar("pedras é um compêndio rochosa.\n")
+        self.assertIsNone(erros)
+
+    def test_array_cinzento_tamanho_avaliado(self):
+        # sombra=6 letras → int tons[6]
+        arvore, erros = _analisar("tons é um compêndio cinzento de sombra.\n")
+        self.assertIsNone(erros)
+        self.assertEqual(arvore.instructions[0].size, 6)
+
+    def test_array_nao_interfere_com_declaracao_escalar(self):
+        _, erros = _analisar("vida é um compêndio rochoso com amor, dor.\nfogo é rocha.\n")
+        self.assertIsNone(erros)
+
+
 class TestScanSemantica(unittest.TestCase):
 
     def test_scan_variavel_declarada_sem_erros(self):

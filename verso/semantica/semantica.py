@@ -1,7 +1,7 @@
 from verso.semantica.constants import SemanticError
 from verso.ast import (
     Program, Statement, Expression,
-    VariableDeclaration, Attribution, WhileLoop, IfBody,
+    VariableDeclaration, ArrayDeclaration, Attribution, WhileLoop, IfBody,
     PrintStatement, ScanStatement, BreakStatement, ContinueStatement, ReturnStatement,
     BinaryOperation, MonadicOperation, Literal,
 )
@@ -64,6 +64,8 @@ class SemanticAnalyzer:
 
     def _visit(self, node: Statement) -> list[SemanticError]:
         match node:
+            case ArrayDeclaration():
+                return self._visit_array_declaration(node)
             case VariableDeclaration():
                 return self._visit_declaration(node)
             case Attribution():
@@ -95,6 +97,28 @@ class SemanticAnalyzer:
                 node.value = [self._avaliar_expressao_float(node.value)]
             else:
                 return self._validar_valor(node.name, node.varType, node.value)
+
+        return []
+
+    def _visit_array_declaration(self, node: ArrayDeclaration) -> list[SemanticError]:
+        if node.name in self._scopes[-1]:
+            return [SemanticError(f"'{node.name}' já foi declarada.")]
+        self._declare(node.name, node.elementType)
+
+        if node.size is not None and isinstance(node.size, str):
+            node.size = int(node.size) if node.size.lstrip('-').isdigit() else len(node.size)
+
+        if node.values is not None and node.elementType in _TIPOS_NUMERICOS:
+            evaluated = []
+            for word in node.values:
+                if isinstance(word, str):
+                    try:
+                        evaluated.append(float(word) if '.' in word else int(word))
+                    except ValueError:
+                        evaluated.append(len(word))
+                else:
+                    evaluated.append(word)
+            node.values = evaluated
 
         return []
 

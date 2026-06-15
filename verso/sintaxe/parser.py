@@ -2,7 +2,7 @@ from verso.token.constants import Token, TokenType
 from verso.sintaxe.constants import (
     SKIP_LIST, EOI_TOKEN_LIST, TYPE_TOKEN_LIST, FILLING_TOKENS_LIST, BOOLEAN_TOKENS_LIST,
     Statement, Expression, Program, FunctionDefinition, FunctionCall,
-    VariableDeclaration, Attribution, Variable, Literal,
+    VariableDeclaration, ArrayDeclaration, Attribution, Variable, Literal,
     WhileLoop, BinaryOperation, MonadicOperation, IfBody, ScanStatement,
     PrintStatement, BreakStatement, ContinueStatement, ReturnStatement,
 )
@@ -351,12 +351,54 @@ class Parser:
 
     # --- declarations and attributions ---
 
+    def parse_array_decl(self, name: str) -> ArrayDeclaration:
+        self.consume_token([TokenType.DATA_STRUCT])
+
+        _, _ = self.go_to_next_relevant_token()
+        elem_type_token = self.consume_token([TokenType.PRIMITIVE_TYPE])
+        elem_type = elem_type_token.value
+
+        tok = self.get_current_token()
+
+        if tok and tok.type == TokenType.WITH:
+            self.consume_token([TokenType.WITH])
+            values = []
+            while self.get_current_token() and self.get_current_token().type not in (TokenType.DOT, TokenType.EOL):
+                curr = self.get_current_token()
+                if curr.type in (TokenType.VARIABLE, TokenType.NUMBER):
+                    values.append(curr.value)
+                self.consume_token()
+            if self.get_current_token():
+                self._last_eoi = self.get_current_token().type
+            return ArrayDeclaration(name=name, elementType=elem_type, size=None, values=values)
+
+        elif tok and tok.type == TokenType.PREPOSITION and tok.value == 'de':
+            self.consume_token([TokenType.PREPOSITION])
+            size_tok = self.get_current_token()
+            size_word: str | None = None
+            if size_tok and size_tok.type == TokenType.VARIABLE:
+                size_word = size_tok.value
+                self.consume_token([TokenType.VARIABLE])
+            elif size_tok and size_tok.type == TokenType.NUMBER:
+                size_word = size_tok.value
+                self.consume_token([TokenType.NUMBER])
+            if self.get_current_token() and self.get_current_token().type in (TokenType.DOT, TokenType.EOL):
+                self._last_eoi = self.get_current_token().type
+            return ArrayDeclaration(name=name, elementType=elem_type, size=size_word, values=None)
+
+        else:
+            if self.get_current_token() and self.get_current_token().type in (TokenType.DOT, TokenType.EOL):
+                self._last_eoi = self.get_current_token().type
+            return ArrayDeclaration(name=name, elementType=elem_type, size=None, values=None)
+
     def parse_decl_attr(self) -> Statement:
         first_token = self.consume_token()
         self.consume_token()  # consome token de atribuição
 
         _, next_relevant_token = self.go_to_next_relevant_token()
-        if next_relevant_token.type in TYPE_TOKEN_LIST:
+        if next_relevant_token.type == TokenType.DATA_STRUCT:
+            return self.parse_array_decl(first_token.value)
+        elif next_relevant_token.type == TokenType.PRIMITIVE_TYPE:
             varType = self.consume_token()
             tokens_eoi = self.go_to_EOI()
             if tokens_eoi is None:

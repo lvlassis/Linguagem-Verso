@@ -4,6 +4,7 @@ from verso.sintaxe.constants import (
     Expression,
     Program,
     VariableDeclaration,
+    ArrayDeclaration,
     Attribution,
     WhileLoop,
     Literal,
@@ -20,7 +21,7 @@ from verso.sintaxe.constants import (
 
 __all__ = [
     'ASTNode', 'Statement', 'Expression',
-    'Program', 'VariableDeclaration', 'Attribution', 'WhileLoop',
+    'Program', 'VariableDeclaration', 'ArrayDeclaration', 'Attribution', 'WhileLoop',
     'Literal', 'Variable', 'BinaryOperation', 'MonadicOperation',
     'PrintStatement', 'ScanStatement', 'BreakStatement', 'ContinueStatement', 'ReturnStatement',
     'IfBody',

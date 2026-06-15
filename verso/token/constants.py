@@ -52,7 +52,10 @@ class TokenType(Enum):
 
     # Entrada
     SCAN = 'SCAN'
-    
+
+    # Arrays
+    WITH = 'WITH'
+
     # Operações
     SUM = 'SUM'
     SUB = 'SUB'
@@ -103,6 +106,19 @@ PALAVRAS_RESERVADAS: dict[str, Token] = {
 
     "coro":      Token(TokenType.DATA_STRUCT),
     "compêndio": Token(TokenType.DATA_STRUCT),
+    "conjunto":  Token(TokenType.DATA_STRUCT),
+
+    # Tipos adjetivados para arrays (reusam PRIMITIVE_TYPE — contexto é dado por DATA_STRUCT antes)
+    r"rochos[oa]":     Token(TokenType.PRIMITIVE_TYPE, PrimitiveType.INTEGER),
+    r"enevoad[oa]":    Token(TokenType.PRIMITIVE_TYPE, PrimitiveType.FLOAT),
+    r"cinzent[oa]":    Token(TokenType.PRIMITIVE_TYPE, PrimitiveType.FLOAT),
+    r"traçad[oa]":     Token(TokenType.PRIMITIVE_TYPE, PrimitiveType.CHAR),
+    r"suspirad[oa]":   Token(TokenType.PRIMITIVE_TYPE, PrimitiveType.CHAR),
+    r"versejad[oa]":   Token(TokenType.PRIMITIVE_TYPE, PrimitiveType.STRING),
+    r"prosaico|prosaica": Token(TokenType.PRIMITIVE_TYPE, PrimitiveType.STRING),
+    r"dúbi[oa]":       Token(TokenType.PRIMITIVE_TYPE, PrimitiveType.BOOL),
+
+    "com": Token(TokenType.WITH),
 
     "se":       Token(TokenType.IF),
     "senão":    Token(TokenType.ELSE),

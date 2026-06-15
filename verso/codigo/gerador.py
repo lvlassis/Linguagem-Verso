@@ -1,6 +1,6 @@
 from verso.ast import (
     Program, Statement, Expression,
-    VariableDeclaration, Attribution, WhileLoop, IfBody,
+    VariableDeclaration, ArrayDeclaration, Attribution, WhileLoop, IfBody,
     Literal, BinaryOperation, MonadicOperation,
     PrintStatement, ScanStatement, BreakStatement, ContinueStatement, ReturnStatement,
 )
@@ -61,6 +61,8 @@ class GeradorCodigo:
 
     def _visitar(self, node: Statement) -> str:
         match node:
+            case ArrayDeclaration():
+                return self._gerar_array(node)
             case VariableDeclaration():
                 return self._gerar_declaracao(node)
             case Attribution():
@@ -80,6 +82,15 @@ class GeradorCodigo:
             case IfBody():
                 return self._gerar_if(node)
         raise NotImplementedError(f"Geração não implementada para {type(node).__name__}")
+
+    def _gerar_array(self, node: ArrayDeclaration) -> str:
+        c_type = _C_TYPES[node.elementType]
+        if node.values is not None:
+            vals = ', '.join(str(v) for v in node.values)
+            return f'{c_type} {node.name}[] = {{{vals}}};'
+        elif node.size is not None:
+            return f'{c_type} {node.name}[{node.size}];'
+        return f'{c_type} {node.name}[];'
 
     def _gerar_declaracao(self, node: VariableDeclaration) -> str:
         c_type = _C_TYPES[node.varType]

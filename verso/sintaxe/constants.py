@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from verso.token.constants import TokenType
+from verso.token.constants import TokenType, PrimitiveType
 
 SKIP_LIST = [
     TokenType.ARTICLE,
@@ -100,6 +100,14 @@ class ContinueStatement(Statement):
 @dataclass
 class ReturnStatement(Statement):
     value: list
+
+@dataclass
+class ArrayDeclaration(Statement):
+    name: str
+    elementType: PrimitiveType
+    size: str | int | None    # palavra crua (str) antes da avaliação semântica; int depois
+    values: list | None       # palavras cruas (list[str]) antes; valores avaliados depois
+
 
 @dataclass
 class FunctionDefinition(Statement):

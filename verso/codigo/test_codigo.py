@@ -2,6 +2,7 @@ import unittest
 
 from verso.token import tokenize
 from verso.sintaxe.parser import Parser
+from verso.semantica.semantica import SemanticAnalyzer
 from verso.codigo.gerador import GeradorCodigo
 
 
@@ -10,6 +11,18 @@ def _compilar(fonte: str) -> str:
     programa = Parser(tokens).parse_program()
     full = GeradorCodigo().gerar(programa)
     # extrai o corpo entre "int main() {" e "return 0;" e desfaz o recuo de 4 espaços
+    start = full.index('int main() {\n') + len('int main() {\n')
+    end = full.rindex('\nreturn 0;\n}')
+    body = full[start:end]
+    return '\n'.join(line[4:] if line.startswith('    ') else line for line in body.split('\n'))
+
+
+def _compilar_full(fonte: str) -> str:
+    """Pipeline completo: tokeniza → parse → semântica → geração de código."""
+    tokens = tokenize(fonte)
+    programa = Parser(tokens).parse_program()
+    programa, _ = SemanticAnalyzer().analyse(programa)
+    full = GeradorCodigo().gerar(programa)
     start = full.index('int main() {\n') + len('int main() {\n')
     end = full.rindex('\nreturn 0;\n}')
     body = full[start:end]
@@ -231,6 +244,57 @@ class TestWhile(unittest.TestCase):
         fonte = "amor é rocha.\nenquanto amor igual 0\namor é sutil.\n"
         esperado = "int amor;\nwhile (amor == 0) {\n    amor = sutil;\n}"
         self.assertEqual(_compilar(fonte), esperado)
+
+
+class TestArray(unittest.TestCase):
+
+    def test_array_int_com_valores(self):
+        # amor=4, dor=3, sofrimento=10, ternura=7 (letras por palavra)
+        fonte = "vida é um compêndio rochoso com amor, dor, sofrimento e ternura.\n"
+        self.assertEqual(_compilar_full(fonte), "int vida[] = {4, 3, 10, 7};")
+
+    def test_array_int_com_tamanho(self):
+        # amor = 4 letras → int vida[4]
+        self.assertEqual(_compilar_full("vida é um compêndio rochoso de amor.\n"), "int vida[4];")
+
+    def test_array_float_com_valores(self):
+        # breve=5, leve=4
+        self.assertEqual(_compilar_full("dados é um compêndio enevoado com breve, leve.\n"), "float dados[] = {5, 4};")
+
+    def test_array_float_cinzento(self):
+        # sombra=6, nuvens não é palavra reservada
+        self.assertEqual(_compilar_full("nuvens é um compêndio cinzento de sombra.\n"), "float nuvens[6];")
+
+    def test_array_char_vazio(self):
+        self.assertEqual(_compilar("letras é um compêndio traçado.\n"), "char letras[];")
+
+    def test_array_string_versejado(self):
+        # saudade=7
+        self.assertEqual(_compilar_full("poemas é um compêndio versejado de saudade.\n"), "char* poemas[7];")
+
+    def test_array_bool_dubio(self):
+        # amor=4
+        self.assertEqual(_compilar_full("flags é um compêndio dúbio de amor.\n"), "bool flags[4];")
+
+    def test_conjunto_alias(self):
+        # eco=3
+        self.assertEqual(_compilar_full("sons é um conjunto rochoso de eco.\n"), "int sons[3];")
+
+    def test_array_com_numero_literal(self):
+        self.assertEqual(_compilar("arr é um compêndio rochoso de 5.\n"), "int arr[5];")
+
+    def test_array_valores_numericos_sem_semantica(self):
+        # literais numéricos no 'com' não precisam de avaliação semântica
+        self.assertEqual(_compilar("notas é um compêndio rochoso com 4, 3, 10.\n"), "int notas[] = {4, 3, 10};")
+
+    def test_array_rochosa_variante_feminina(self):
+        self.assertEqual(_compilar("pedras é um compêndio rochosa de 5.\n"), "int pedras[5];")
+
+    def test_array_no_programa_com_declaracao_escalar(self):
+        # quatro=6 letras → int tamanho = 6; / amor=4 → int valores[4]
+        fonte = "tamanho é rocha quatro.\nvalores é um compêndio rochoso de amor.\n"
+        esperado = "int tamanho = 6;\nint valores[4];"
+        self.assertEqual(_compilar_full(fonte), esperado)
 
 
 class TestScan(unittest.TestCase):
