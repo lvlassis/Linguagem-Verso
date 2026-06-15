@@ -24,6 +24,11 @@ FILLING_TOKENS_LIST = [
     TokenType.CONJUNCTION
 ]
 
+BOOLEAN_TOKENS_LIST = [
+    TokenType.BOOLEAN_FALSE,
+    TokenType.BOOLEAN_TRUE
+]
+
 class ASTNode:
     pass
 class Statement(ASTNode):
