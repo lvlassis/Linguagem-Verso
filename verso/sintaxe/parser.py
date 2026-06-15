@@ -94,6 +94,8 @@ class Parser:
                 return self.parse_while()
             case TokenType.PRINT:
                 return self.parse_print()
+            case TokenType.SCAN:
+                return self.parse_scan()
             case TokenType.BREAK:
                 return self.parse_break()
             case TokenType.CONTINUE:
@@ -273,6 +275,11 @@ class Parser:
         self.consume_token([TokenType.PRINT])
         args = self.parse_expression(ignore_complements=False)
         return PrintStatement(args=args)
+    
+    def parse_scan(self) -> ScanStatement:
+        self.consume_token([TokenType.SCAN])
+        args = self.parse_expression()
+        return ScanStatement(args=args)
 
     def parse_break(self) -> BreakStatement:
         self.consume_token([TokenType.BREAK])
