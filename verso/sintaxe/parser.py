@@ -133,6 +133,10 @@ class Parser:
         instructions = []
         closed = False
         while self.get_current_token():
+            while self.get_current_token() and self.get_current_token().type == TokenType.EOL:
+                self.consume_token()
+            if not self.get_current_token():
+                break
             tok = self.get_current_token()
             if tok.type == TokenType.DOT:
                 self.consume_token()
@@ -161,6 +165,10 @@ class Parser:
 
             closed_else = False
             while self.get_current_token():
+                while self.get_current_token() and self.get_current_token().type == TokenType.EOL:
+                    self.consume_token()
+                if not self.get_current_token():
+                    break
                 tok = self.get_current_token()
                 if tok.type == TokenType.DOT:
                     self.consume_token()
@@ -186,10 +194,20 @@ class Parser:
         self.consume_token([TokenType.WHILE])
         condition = self.parse_expression(ignore_complements=False)
         body = []
-        while self.get_current_token() and self.get_current_token().type != TokenType.DOT:
+        while self.get_current_token():
+            while self.get_current_token() and self.get_current_token().type == TokenType.EOL:
+                self.consume_token()
+            if not self.get_current_token():
+                break
+            if self.get_current_token().type == TokenType.DOT:
+                self.consume_token()
+                break
+            self._last_eoi = None
             instruction = self.parse_instructions()
             if instruction is not None:
                 body.append(instruction)
+            if self._last_eoi == TokenType.DOT:
+                break
 
         return WhileLoop(condition=condition, body=body)
 
@@ -225,7 +243,7 @@ class Parser:
             return MonadicOperation(operand=operand, operator=token.value)
         elif token.type in BOOLEAN_TOKENS_LIST:
             self.consume_token(BOOLEAN_TOKENS_LIST)
-            return Literal(token.value)
+            return Literal(token)
 
 
     def parse_term(self) -> Expression:
@@ -293,6 +311,9 @@ class Parser:
 
     def parse_print(self) -> PrintStatement:
         self.consume_token([TokenType.PRINT])
+        tok = self.get_current_token()
+        if tok is None or tok.type in EOI_TOKEN_LIST:
+            return PrintStatement(args=None)
         args = self.parse_expression(ignore_complements=False)
         return PrintStatement(args=args)
     

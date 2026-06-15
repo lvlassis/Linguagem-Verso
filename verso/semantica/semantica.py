@@ -148,10 +148,7 @@ class SemanticAnalyzer:
         return errors
 
     def _visit_while(self, node: WhileLoop) -> list[SemanticError]:
-        errors = []
-        for token in node.condition.value:
-            if isinstance(token, Token) and token.type == TokenType.VARIABLE and not self._is_declared(token.value):
-                errors.append(SemanticError(f"'{token.value}' não foi declarada."))
+        _, errors = self._verificar_expressao(node.condition)
 
         self._push_scope()
         for stmt in node.body:
@@ -162,6 +159,8 @@ class SemanticAnalyzer:
     def _verificar_expressao(self, node: Expression) -> tuple[PrimitiveType | None, list[SemanticError]]:
         match node:
             case Literal():
+                if isinstance(node.value, Token):
+                    return PrimitiveType.BOOL, []
                 if isinstance(node.value, list):
                     errors, tipo = [], None
                     for nome in node.value:

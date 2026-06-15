@@ -108,17 +108,23 @@ class GeradorCodigo:
                 operand = self._gerar_expressao(node.operand)
                 return f'!({operand})'
             case Literal():
+                if isinstance(node.value, Token):
+                    if node.value.type in _C_BOOLEANS:
+                        return _C_BOOLEANS[node.value.type]
+                    return str(node.value.value)
                 if isinstance(node.value, list):
                     return ' '.join(str(v) for v in node.value if v is not None)
                 return str(node.value)
         raise NotImplementedError(f"Expressão não implementada: {type(node).__name__}")
 
     def _gerar_while(self, node: WhileLoop) -> str:
-        cond = self._gerar_condicao(node.condition)
+        cond = self._gerar_expressao(node.condition)
         corpo = '\n'.join(self._indent(self._visitar(s)) for s in node.body)
         return f'while ({cond}) {{\n{corpo}\n}}'
 
     def _gerar_print(self, node: PrintStatement) -> str:
+        if node.args is None:
+            return 'printf("\\n");'
         args = [str(v) for v in node.args.value if v is not None]
         return f'printf("{" ".join(args)}\\n");'
 
