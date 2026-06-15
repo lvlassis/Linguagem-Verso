@@ -1,2 +1,6 @@
 __pycache__/
 rascunhos.py
+.venv/
+dist/
+build/
+*.spec
