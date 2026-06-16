@@ -53,7 +53,7 @@ def main() -> None:
         print(codigo)
         return
 
-    saida = Path.cwd() / caminho.with_suffix('.c').name
+    saida = caminho.parent.parent / "bin" / caminho.with_suffix('.c').name
     saida.write_text(codigo, encoding='utf-8')
     print(f"[verso] compilado → {saida}")
 

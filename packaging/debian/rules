@@ -1,0 +1,16 @@
+#!/usr/bin/make -f
+
+%:
+	dh $@
+
+override_dh_auto_build:
+	pyinstaller --onefile --name verso --distpath dist/ --clean main.py
+
+override_dh_auto_install:
+	install -Dm755 dist/verso \
+	    debian/verso/usr/bin/verso
+	install -Dm644 docs/sintaxe.md \
+	    debian/verso/usr/share/doc/verso/sintaxe.md
+
+override_dh_auto_test:
+	python3 -m unittest discover -s . -p 'test_*.py'

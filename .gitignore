@@ -4,4 +4,5 @@ rascunhos.py
 dist/
 build/
 *.spec
+!packaging/rpm/*.spec
 bin/

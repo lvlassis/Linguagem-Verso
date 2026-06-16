@@ -1,0 +1,17 @@
+Source: verso
+Section: devel
+Priority: optional
+Maintainer: Vinicius Lassis <lvlassis.2@gmail.com>
+Build-Depends: debhelper-compat (= 13), python3, python3-pyinstaller
+Standards-Version: 4.6.2
+Homepage: https://github.com/lvlassis/Linguagem-Verso
+Rules-Requires-Root: no
+
+Package: verso
+Architecture: amd64 arm64
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Recommends: gcc
+Description: Compilador da linguagem Romântica para C
+ verso é o compilador da linguagem Romântica (também chamada Linguagem Poética),
+ onde programas se parecem com poesia romântica em português.
+ O compilador transpila código .vs para C.

@@ -1,0 +1,36 @@
+# Maintainer: Vinicius Lassis <lvlassis.2@gmail.com>
+pkgname=verso-git
+pkgver=r79.2810955
+pkgrel=1
+pkgdesc="Compilador da linguagem Romântica (Linguagem Poética) para C"
+arch=('x86_64' 'aarch64')
+url="https://github.com/lvlassis/Linguagem-Verso"
+license=('unknown')  # TODO: adicionar arquivo LICENSE ao repositório
+depends=('python')
+makedepends=('git')
+optdepends=('gcc: para compilar o código C gerado pelo verso')
+provides=('verso')
+conflicts=('verso')
+source=("$pkgname::git+$url.git")
+sha256sums=('SKIP')
+
+pkgver() {
+    cd "$srcdir/$pkgname"
+    printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+}
+
+package() {
+    cd "$srcdir/$pkgname"
+
+    install -d "$pkgdir/usr/lib/verso"
+    cp -r verso "$pkgdir/usr/lib/verso/verso"
+    install -Dm644 main.py "$pkgdir/usr/lib/verso/main.py"
+
+    install -Dm755 /dev/stdin "$pkgdir/usr/bin/verso" << 'EOF'
+#!/bin/sh
+exec /usr/bin/python /usr/lib/verso/main.py "$@"
+EOF
+
+    install -Dm644 "docs/sintaxe.md" \
+        "$pkgdir/usr/share/doc/verso/sintaxe.md"
+}

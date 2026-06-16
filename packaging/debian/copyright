@@ -1,0 +1,10 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: verso
+Upstream-Contact: Vinicius Lassis <lvlassis.2@gmail.com>
+Source: https://github.com/lvlassis/Linguagem-Verso
+
+Files: *
+Copyright: 2026 Vinicius Lassis <lvlassis.2@gmail.com>
+License: TODO
+Comment:
+ TODO: adicionar arquivo LICENSE ao repositório e atualizar este campo.

@@ -1,0 +1,5 @@
+# pack-refs with: peeled fully-peeled sorted 
+281095512d217334e5157c5484e9a8fc269e4cd2 refs/heads/develop
+281095512d217334e5157c5484e9a8fc269e4cd2 refs/heads/main
+4184653ab20b5ebf80be176bf3ee655ae21df0ae refs/heads/refactor/lexical_analisys_with_regex
+281095512d217334e5157c5484e9a8fc269e4cd2 refs/tags/1.0.0
